@@ -99,7 +99,7 @@ const ReceiptForm = ({
       <div className="mt-2 mb-1 flex justify-center">
         <select
           className="text-xs bg-secondary text-secondary-foreground rounded px-2 py-1 border border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary"
-          value={data.location}
+          value={data.location || "shegaon"}
           onChange={(e) => onChange({ ...data, location: e.target.value as LocationKey })}
         >
           {Object.entries(LOCATIONS).map(([key, loc]) => (
@@ -115,7 +115,7 @@ const ReceiptForm = ({
           S.S. DHARMKATA
         </h2>
         <p className="text-xs text-primary/80 border-b border-primary/50 inline-block pb-0.5">
-          {LOCATIONS[data.location].address} Mob : 9970041700
+          {(LOCATIONS[data.location || "shegaon"]).address} Mob : 9970041700
         </p>
         <p className="text-[10px] text-primary/60 mt-0.5">24/7 AVAILABLE</p>
       </div>
