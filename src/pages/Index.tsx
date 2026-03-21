@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import jsPDF from "jspdf";
 
 const LOCATIONS = {
@@ -9,6 +9,10 @@ const LOCATIONS = {
   wadkhal: {
     label: "Wadkhal",
     address: "Wadkhal Taluka Pen Dist.Raigad (MH) 402107",
+  },
+  kasoda: {
+    label: "Kasoda",
+    address: "Kasoda, Taluka Erandol, Dist. Jalgaon (MH)",
   },
 } as const;
 
@@ -29,6 +33,8 @@ interface FormData {
   rs: string;
 }
 
+const NUM_DIGITS = 5;
+
 const emptyForm = (): FormData => ({
   location: "shegaon",
   no: "",
@@ -37,17 +43,29 @@ const emptyForm = (): FormData => ({
   timeOut: "",
   ms: "",
   vehicleNo: "",
-  grossWeight: ["", "", "", "", ""],
-  tareWeight: ["", "", "", "", ""],
-  netWeight: ["", "", "", "", ""],
+  grossWeight: Array(NUM_DIGITS).fill(""),
+  tareWeight: Array(NUM_DIGITS).fill(""),
+  netWeight: Array(NUM_DIGITS).fill(""),
   receivedRs: "",
   rs: "",
 });
 
+function calcNetWeight(gross: string[], tare: string[]): string[] {
+  const grossNum = parseInt(gross.join("") || "0", 10);
+  const tareNum = parseInt(tare.join("") || "0", 10);
+  const net = grossNum - tareNum;
+  if (gross.every((d) => d === "") && tare.every((d) => d === "")) {
+    return Array(NUM_DIGITS).fill("");
+  }
+  const netStr = Math.abs(net).toString().padStart(NUM_DIGITS, "0");
+  const digits = netStr.slice(-NUM_DIGITS).split("");
+  return digits;
+}
+
 const inputClass =
   "border-b border-primary/40 bg-transparent text-foreground text-sm px-1 py-0.5 focus:outline-none focus:border-primary w-full";
-const cellInputClass =
-  "w-full h-full bg-transparent text-center text-sm focus:outline-none px-0.5";
+const digitInputClass =
+  "w-full h-8 bg-transparent text-center text-sm font-mono focus:outline-none focus:bg-primary/10 border-none";
 
 const ReceiptForm = ({
   data,
@@ -62,24 +80,47 @@ const ReceiptForm = ({
   onRemove: () => void;
   canRemove: boolean;
 }) => {
-  const updateWeight = (
-    type: "grossWeight" | "tareWeight",
-    idx: number,
-    val: string
-  ) => {
-    const arr = [...data[type]];
-    arr[idx] = val;
-    const updated = { ...data, [type]: arr };
-    // Auto-calculate net weight
-    const gross = type === "grossWeight" ? arr : data.grossWeight;
-    const tare = type === "tareWeight" ? arr : data.tareWeight;
-    updated.netWeight = gross.map((g, i) => {
-      const gNum = parseFloat(g);
-      const tNum = parseFloat(tare[i]);
-      return !isNaN(gNum) && !isNaN(tNum) ? String(gNum - tNum) : "";
-    });
-    onChange(updated);
-  };
+  const grossRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const tareRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleDigitChange = useCallback(
+    (type: "grossWeight" | "tareWeight", idx: number, val: string) => {
+      const digit = val.replace(/[^0-9]/g, "").slice(-1);
+      const arr = [...data[type]];
+      arr[idx] = digit;
+      const updated = { ...data, [type]: arr };
+      const gross = type === "grossWeight" ? arr : data.grossWeight;
+      const tare = type === "tareWeight" ? arr : data.tareWeight;
+      updated.netWeight = calcNetWeight(gross, tare);
+      onChange(updated);
+
+      // Auto-advance to next box
+      if (digit !== "") {
+        const refs = type === "grossWeight" ? grossRefs : tareRefs;
+        if (idx < NUM_DIGITS - 1) {
+          refs.current[idx + 1]?.focus();
+        } else if (type === "grossWeight") {
+          // Jump to first tare weight box
+          tareRefs.current[0]?.focus();
+        }
+      }
+    },
+    [data, onChange]
+  );
+
+  const handleKeyDown = useCallback(
+    (type: "grossWeight" | "tareWeight", idx: number, e: React.KeyboardEvent) => {
+      const refs = type === "grossWeight" ? grossRefs : tareRefs;
+      if (e.key === "Backspace" && data[type][idx] === "" && idx > 0) {
+        refs.current[idx - 1]?.focus();
+      } else if (e.key === "ArrowLeft" && idx > 0) {
+        refs.current[idx - 1]?.focus();
+      } else if (e.key === "ArrowRight" && idx < NUM_DIGITS - 1) {
+        refs.current[idx + 1]?.focus();
+      }
+    },
+    [data]
+  );
 
   return (
     <div className="border-2 border-primary rounded px-5 py-4 bg-card relative">
@@ -160,7 +201,18 @@ const ReceiptForm = ({
               </td>
               {data[type].map((val, i) => (
                 <td key={i} className="border border-primary p-0">
-                  <input className={cellInputClass} value={val} onChange={(e) => updateWeight(type, i, e.target.value)} />
+                  <input
+                    ref={(el) => {
+                      (type === "grossWeight" ? grossRefs : tareRefs).current[i] = el;
+                    }}
+                    className={digitInputClass}
+                    value={val}
+                    maxLength={1}
+                    inputMode="numeric"
+                    onChange={(e) => handleDigitChange(type, i, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(type, i, e)}
+                    onFocus={(e) => e.target.select()}
+                  />
                 </td>
               ))}
             </tr>
@@ -169,7 +221,7 @@ const ReceiptForm = ({
             <td className="border border-primary px-2 py-0.5 text-xs font-semibold text-primary w-28">Net Weight</td>
             {data.netWeight.map((val, i) => (
               <td key={i} className="border border-primary p-0 bg-secondary/30">
-                <span className="block text-center text-sm px-0.5 font-semibold">{val}</span>
+                <span className="block text-center text-sm px-0.5 font-semibold font-mono h-8 leading-8">{val}</span>
               </td>
             ))}
           </tr>
@@ -206,8 +258,8 @@ function generatePDF(forms: FormData[]) {
   const pageW = 210;
   const margin = 10;
   const contentW = pageW - margin * 2;
-  const slipH = 130; // height per slip
-  const color: [number, number, number] = [180, 30, 70]; // dark rose
+  const slipH = 130;
+  const color: [number, number, number] = [180, 30, 70];
 
   forms.forEach((form, idx) => {
     const isSecondOnPage = idx % 2 === 1;
@@ -218,13 +270,12 @@ function generatePDF(forms: FormData[]) {
     const x = margin;
     const y = yStart;
 
-    // Border
     doc.setDrawColor(...color);
     doc.setLineWidth(0.5);
     doc.rect(x, y, contentW, slipH);
 
-    // Header
-    const locAddr = LOCATIONS[form.location].address;
+    const loc = form.location || "shegaon";
+    const locAddr = LOCATIONS[loc].address;
     doc.setTextColor(...color);
     doc.setFontSize(8);
     doc.text("|| Shree ||", pageW / 2, y + 6, { align: "center" });
@@ -238,7 +289,6 @@ function generatePDF(forms: FormData[]) {
     doc.setFontSize(7);
     doc.text("24/7 AVAILABLE", pageW / 2, y + 22, { align: "center" });
 
-    // No & Date
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.text("No.", x + 4, y + 25);
@@ -247,32 +297,27 @@ function generatePDF(forms: FormData[]) {
     doc.text("Date:", x + contentW - 50, y + 25);
     doc.text(form.date, x + contentW - 35, y + 25);
 
-    // Time In/Out
     doc.setFontSize(9);
     doc.text("Time In:", x + 4, y + 32);
     doc.text(form.timeIn, x + 24, y + 32);
     doc.text("Time Out:", x + contentW / 2, y + 32);
     doc.text(form.timeOut, x + contentW / 2 + 22, y + 32);
 
-    // M/s
     doc.text("M/s.", x + 4, y + 39);
     doc.line(x + 14, y + 40, x + contentW - 4, y + 40);
     doc.text(form.ms, x + 16, y + 39);
 
-    // Vehicle
     doc.text("Vehicle No.", x + 4, y + 46);
     doc.line(x + 26, y + 47, x + contentW - 4, y + 47);
     doc.text(form.vehicleNo, x + 28, y + 46);
 
-    // KILOGRAMS heading
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.text("KILOGRAMS", pageW / 2, y + 54, { align: "center" });
 
-    // Table
     const tableY = y + 57;
     const labelW = 28;
-    const cellW = (contentW - labelW - 8) / 5;
+    const cellW = (contentW - labelW - 8) / NUM_DIGITS;
     const rowH = 8;
     const tableX = x + 4;
 
@@ -298,14 +343,12 @@ function generatePDF(forms: FormData[]) {
       });
     });
 
-    // Disclaimer
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     const disclaimerY = tableY + rowH * 3 + 5;
     doc.text("Please Check Weight No Responsibility Accepted Once", pageW / 2, disclaimerY, { align: "center" });
     doc.text("Carrier Leave the Weight Bridge", pageW / 2, disclaimerY + 4, { align: "center" });
 
-    // Received & Signature
     doc.setFontSize(9);
     const bottomY = disclaimerY + 10;
     doc.text("Received Rs.", x + 4, bottomY);
@@ -335,7 +378,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Toolbar */}
       <div className="sticky top-0 z-10 bg-card border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
         <h1 className="text-lg font-bold text-primary">S.S. Dharmkata</h1>
         <div className="flex gap-2">
@@ -354,7 +396,6 @@ const Index = () => {
         </div>
       </div>
 
-      {/* Forms */}
       <div className="max-w-2xl mx-auto py-6 px-4 space-y-4">
         {forms.map((form, i) => (
           <ReceiptForm
