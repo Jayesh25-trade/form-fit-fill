@@ -95,15 +95,29 @@ const ReceiptForm = ({
         Receipt #{index + 1}
       </p>
 
+      {/* Location selector */}
+      <div className="mt-2 mb-1 flex justify-center">
+        <select
+          className="text-xs bg-secondary text-secondary-foreground rounded px-2 py-1 border border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary"
+          value={data.location}
+          onChange={(e) => onChange({ ...data, location: e.target.value as LocationKey })}
+        >
+          {Object.entries(LOCATIONS).map(([key, loc]) => (
+            <option key={key} value={key}>{loc.label}</option>
+          ))}
+        </select>
+      </div>
+
       {/* Header */}
-      <div className="text-center mb-2 mt-2">
+      <div className="text-center mb-2">
         <p className="text-xs text-primary/70">|| Shree ||</p>
         <h2 className="text-lg font-bold text-primary tracking-wide leading-tight">
           S.S. DHARMKATA
         </h2>
         <p className="text-xs text-primary/80 border-b border-primary/50 inline-block pb-0.5">
-          Shegaon Dist.Buldana (M.S.) 444203 Mob : 9970041700
+          {LOCATIONS[data.location].address} Mob : 9970041700
         </p>
+        <p className="text-[10px] text-primary/60 mt-0.5">24/7 AVAILABLE</p>
       </div>
 
       <div className="flex justify-between items-center mb-1.5 gap-4">
