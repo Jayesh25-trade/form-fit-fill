@@ -1,7 +1,21 @@
 import { useState } from "react";
 import jsPDF from "jspdf";
 
+const LOCATIONS = {
+  shegaon: {
+    label: "Shegaon",
+    address: "Shegaon Dist.Buldana (MH) 444203",
+  },
+  wadkhal: {
+    label: "Wadkhal",
+    address: "Wadkhal Taluka Pen Dist.Raigad (MH) 402107",
+  },
+} as const;
+
+type LocationKey = keyof typeof LOCATIONS;
+
 interface FormData {
+  location: LocationKey;
   no: string;
   date: string;
   timeIn: string;
@@ -16,6 +30,7 @@ interface FormData {
 }
 
 const emptyForm = (): FormData => ({
+  location: "shegaon",
   no: "",
   date: "",
   timeIn: "",
