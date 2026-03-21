@@ -224,6 +224,7 @@ function generatePDF(forms: FormData[]) {
     doc.rect(x, y, contentW, slipH);
 
     // Header
+    const locAddr = LOCATIONS[form.location].address;
     doc.setTextColor(...color);
     doc.setFontSize(8);
     doc.text("|| Shree ||", pageW / 2, y + 6, { align: "center" });
@@ -232,8 +233,10 @@ function generatePDF(forms: FormData[]) {
     doc.text("S.S. DHARMKATA", pageW / 2, y + 12, { align: "center" });
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.text("Shegaon Dist.Buldana (M.S.) 444203 Mob : 9970041700", pageW / 2, y + 17, { align: "center" });
+    doc.text(`${locAddr} Mob : 9970041700`, pageW / 2, y + 17, { align: "center" });
     doc.line(x + 30, y + 18, x + contentW - 30, y + 18);
+    doc.setFontSize(7);
+    doc.text("24/7 AVAILABLE", pageW / 2, y + 22, { align: "center" });
 
     // No & Date
     doc.setFontSize(10);
