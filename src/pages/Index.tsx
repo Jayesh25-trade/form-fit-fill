@@ -48,13 +48,22 @@ const ReceiptForm = ({
   canRemove: boolean;
 }) => {
   const updateWeight = (
-    type: "grossWeight" | "tareWeight" | "netWeight",
+    type: "grossWeight" | "tareWeight",
     idx: number,
     val: string
   ) => {
     const arr = [...data[type]];
     arr[idx] = val;
-    onChange({ ...data, [type]: arr });
+    const updated = { ...data, [type]: arr };
+    // Auto-calculate net weight
+    const gross = type === "grossWeight" ? arr : data.grossWeight;
+    const tare = type === "tareWeight" ? arr : data.tareWeight;
+    updated.netWeight = gross.map((g, i) => {
+      const gNum = parseFloat(g);
+      const tNum = parseFloat(tare[i]);
+      return !isNaN(gNum) && !isNaN(tNum) ? String(gNum - tNum) : "";
+    });
+    onChange(updated);
   };
 
   return (
@@ -115,10 +124,10 @@ const ReceiptForm = ({
       <p className="text-center text-sm font-bold text-primary mb-1">KILOGRAMS</p>
       <table className="w-full border-collapse border border-primary mb-2">
         <tbody>
-          {(["grossWeight", "tareWeight", "netWeight"] as const).map((type) => (
+          {(["grossWeight", "tareWeight"] as const).map((type) => (
             <tr key={type}>
               <td className="border border-primary px-2 py-0.5 text-xs font-semibold text-primary w-28">
-                {type === "grossWeight" ? "Gross Weight" : type === "tareWeight" ? "Tare Weight" : "Net Weight"}
+                {type === "grossWeight" ? "Gross Weight" : "Tare Weight"}
               </td>
               {data[type].map((val, i) => (
                 <td key={i} className="border border-primary p-0">
@@ -127,6 +136,14 @@ const ReceiptForm = ({
               ))}
             </tr>
           ))}
+          <tr>
+            <td className="border border-primary px-2 py-0.5 text-xs font-semibold text-primary w-28">Net Weight</td>
+            {data.netWeight.map((val, i) => (
+              <td key={i} className="border border-primary p-0 bg-secondary/30">
+                <span className="block text-center text-sm px-0.5 font-semibold">{val}</span>
+              </td>
+            ))}
+          </tr>
         </tbody>
       </table>
 
