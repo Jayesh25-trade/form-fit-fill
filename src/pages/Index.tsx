@@ -99,7 +99,7 @@ const ReceiptForm = ({
       <div className="mt-2 mb-1 flex justify-center">
         <select
           className="text-xs bg-secondary text-secondary-foreground rounded px-2 py-1 border border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary"
-          value={data.location}
+          value={data.location || "shegaon"}
           onChange={(e) => onChange({ ...data, location: e.target.value as LocationKey })}
         >
           {Object.entries(LOCATIONS).map(([key, loc]) => (
