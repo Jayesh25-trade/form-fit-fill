@@ -115,7 +115,7 @@ const ReceiptForm = ({
           S.S. DHARMKATA
         </h2>
         <p className="text-xs text-primary/80 border-b border-primary/50 inline-block pb-0.5">
-          {LOCATIONS[data.location].address} Mob : 9970041700
+          {(LOCATIONS[data.location || "shegaon"]).address} Mob : 9970041700
         </p>
         <p className="text-[10px] text-primary/60 mt-0.5">24/7 AVAILABLE</p>
       </div>
