@@ -48,13 +48,22 @@ const ReceiptForm = ({
   canRemove: boolean;
 }) => {
   const updateWeight = (
-    type: "grossWeight" | "tareWeight" | "netWeight",
+    type: "grossWeight" | "tareWeight",
     idx: number,
     val: string
   ) => {
     const arr = [...data[type]];
     arr[idx] = val;
-    onChange({ ...data, [type]: arr });
+    const updated = { ...data, [type]: arr };
+    // Auto-calculate net weight
+    const gross = type === "grossWeight" ? arr : data.grossWeight;
+    const tare = type === "tareWeight" ? arr : data.tareWeight;
+    updated.netWeight = gross.map((g, i) => {
+      const gNum = parseFloat(g);
+      const tNum = parseFloat(tare[i]);
+      return !isNaN(gNum) && !isNaN(tNum) ? String(gNum - tNum) : "";
+    });
+    onChange(updated);
   };
 
   return (
