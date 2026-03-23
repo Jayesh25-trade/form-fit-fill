@@ -123,7 +123,7 @@ const ReceiptForm = ({
   );
 
   return (
-    <div className="border-2 border-primary rounded px-5 py-4 bg-card relative">
+    <div className="border-2 border-primary rounded px-4 py-3 bg-card relative">
       {canRemove && (
         <button
           onClick={onRemove}
@@ -132,14 +132,14 @@ const ReceiptForm = ({
           ✕ Remove
         </button>
       )}
-      <p className="absolute top-2 left-3 text-[10px] text-muted-foreground">
+      <p className="absolute top-1 left-3 text-[10px] text-muted-foreground">
         Receipt #{index + 1}
       </p>
 
       {/* Location selector */}
-      <div className="mt-2 mb-1 flex justify-center">
+      <div className="mt-1 mb-0.5 flex justify-center">
         <select
-          className="text-xs bg-secondary text-secondary-foreground rounded px-2 py-1 border border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary"
+          className="text-xs bg-secondary text-secondary-foreground rounded px-2 py-0.5 border border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary"
           value={data.location || "shegaon"}
           onChange={(e) => onChange({ ...data, location: e.target.value as LocationKey })}
         >
@@ -150,48 +150,48 @@ const ReceiptForm = ({
       </div>
 
       {/* Header */}
-      <div className="text-center mb-2">
-        <p className="text-xs text-primary/70">|| Shree ||</p>
-        <h2 className="text-lg font-bold text-primary tracking-wide leading-tight">
+      <div className="text-center mb-1">
+        <p className="text-xs font-semibold text-primary/70">|| Shree ||</p>
+        <h2 className="text-xl font-extrabold text-primary tracking-wide leading-tight">
           S.S. DHARMKATA
         </h2>
-        <p className="text-xs text-primary/80 border-b border-primary/50 inline-block pb-0.5">
+        <p className="text-sm font-semibold text-primary/80 border-b border-primary/50 inline-block pb-0.5">
           {(LOCATIONS[data.location || "shegaon"]).address} Mob : 9970041700
         </p>
-        <p className="text-[10px] text-primary/60 mt-0.5">24/7 AVAILABLE</p>
+        <p className="text-xs font-bold text-primary/60 mt-0.5">24/7 AVAILABLE</p>
       </div>
 
-      <div className="flex justify-between items-center mb-1.5 gap-4">
+      <div className="flex justify-between items-center mb-1 gap-4">
         <div className="flex items-center gap-1 flex-1">
-          <span className="text-sm font-semibold text-primary whitespace-nowrap">No.</span>
+          <span className="text-sm font-bold text-primary whitespace-nowrap">No.</span>
           <input className={inputClass + " max-w-[80px]"} value={data.no} onChange={(e) => onChange({ ...data, no: e.target.value })} />
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-sm font-semibold text-primary">Date:</span>
+          <span className="text-sm font-bold text-primary">Date:</span>
           <input type="date" className={inputClass + " max-w-[130px]"} value={data.date} onChange={(e) => onChange({ ...data, date: e.target.value })} />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-2">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 mb-1">
         <div className="flex items-center gap-1">
-          <span className="text-sm text-primary whitespace-nowrap">Time In</span>
+          <span className="text-sm font-semibold text-primary whitespace-nowrap">Time In</span>
           <input type="time" className={inputClass} value={data.timeIn} onChange={(e) => onChange({ ...data, timeIn: e.target.value })} />
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-sm text-primary whitespace-nowrap">Time Out</span>
+          <span className="text-sm font-semibold text-primary whitespace-nowrap">Time Out</span>
           <input type="time" className={inputClass} value={data.timeOut} onChange={(e) => onChange({ ...data, timeOut: e.target.value })} />
         </div>
         <div className="flex items-center gap-1 col-span-2">
-          <span className="text-sm text-primary whitespace-nowrap">M/s.</span>
+          <span className="text-sm font-semibold text-primary whitespace-nowrap">M/s.</span>
           <input className={inputClass} value={data.ms} onChange={(e) => onChange({ ...data, ms: e.target.value })} />
         </div>
         <div className="flex items-center gap-1 col-span-2">
-          <span className="text-sm text-primary whitespace-nowrap">Vehicle No.</span>
+          <span className="text-sm font-semibold text-primary whitespace-nowrap">Vehicle No.</span>
           <input className={inputClass} value={data.vehicleNo} onChange={(e) => onChange({ ...data, vehicleNo: e.target.value })} />
         </div>
       </div>
 
-      <p className="text-center text-sm font-bold text-primary mb-1">KILOGRAMS</p>
+      <p className="text-center text-sm font-extrabold text-primary mb-0.5">KILOGRAMS</p>
       <table className="w-full border-collapse border border-primary mb-2">
         <tbody>
           {(["grossWeight", "tareWeight"] as const).map((type) => (
