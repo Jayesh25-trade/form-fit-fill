@@ -123,7 +123,7 @@ const ReceiptForm = ({
   );
 
   return (
-    <div className="border-2 border-primary rounded px-5 py-4 bg-card relative">
+    <div className="border-2 border-primary rounded px-4 py-3 bg-card relative">
       {canRemove && (
         <button
           onClick={onRemove}
@@ -132,14 +132,14 @@ const ReceiptForm = ({
           ✕ Remove
         </button>
       )}
-      <p className="absolute top-2 left-3 text-[10px] text-muted-foreground">
+      <p className="absolute top-1 left-3 text-[10px] text-muted-foreground">
         Receipt #{index + 1}
       </p>
 
       {/* Location selector */}
-      <div className="mt-2 mb-1 flex justify-center">
+      <div className="mt-1 mb-0.5 flex justify-center">
         <select
-          className="text-xs bg-secondary text-secondary-foreground rounded px-2 py-1 border border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary"
+          className="text-xs bg-secondary text-secondary-foreground rounded px-2 py-0.5 border border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary"
           value={data.location || "shegaon"}
           onChange={(e) => onChange({ ...data, location: e.target.value as LocationKey })}
         >
@@ -150,15 +150,15 @@ const ReceiptForm = ({
       </div>
 
       {/* Header */}
-      <div className="text-center mb-2">
-        <p className="text-xs text-primary/70">|| Shree ||</p>
-        <h2 className="text-lg font-bold text-primary tracking-wide leading-tight">
+      <div className="text-center mb-1">
+        <p className="text-xs font-semibold text-primary/70">|| Shree ||</p>
+        <h2 className="text-xl font-extrabold text-primary tracking-wide leading-tight">
           S.S. DHARMKATA
         </h2>
-        <p className="text-xs text-primary/80 border-b border-primary/50 inline-block pb-0.5">
+        <p className="text-sm font-semibold text-primary/80 border-b border-primary/50 inline-block pb-0.5">
           {(LOCATIONS[data.location || "shegaon"]).address} Mob : 9970041700
         </p>
-        <p className="text-[10px] text-primary/60 mt-0.5">24/7 AVAILABLE</p>
+        <p className="text-xs font-bold text-primary/60 mt-0.5">24/7 AVAILABLE</p>
       </div>
 
       <div className="flex justify-between items-center mb-1.5 gap-4">
