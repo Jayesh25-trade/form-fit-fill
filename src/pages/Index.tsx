@@ -277,48 +277,47 @@ function generatePDF(forms: FormData[]) {
     const loc = form.location || "shegaon";
     const locAddr = LOCATIONS[loc].address;
     doc.setTextColor(...color);
-    doc.setFontSize(8);
-    doc.text("|| Shree ||", pageW / 2, y + 6, { align: "center" });
-    doc.setFontSize(14);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
+    doc.text("|| Shree ||", pageW / 2, y + 6, { align: "center" });
+    doc.setFontSize(16);
     doc.text("S.S. DHARMKATA", pageW / 2, y + 12, { align: "center" });
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
     doc.text(`${locAddr} Mob : 9970041700`, pageW / 2, y + 17, { align: "center" });
     doc.line(x + 30, y + 18, x + contentW - 30, y + 18);
-    doc.setFontSize(7);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bolditalic");
     doc.text("24/7 AVAILABLE", pageW / 2, y + 22, { align: "center" });
 
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("No.", x + 4, y + 27);
+    doc.text(form.no, x + 14, y + 27);
+    doc.text("Date:", x + contentW - 50, y + 27);
+    doc.text(form.date, x + contentW - 35, y + 27);
+
     doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("No.", x + 4, y + 25);
-    doc.setFont("helvetica", "normal");
-    doc.text(form.no, x + 14, y + 25);
-    doc.text("Date:", x + contentW - 50, y + 25);
-    doc.text(form.date, x + contentW - 35, y + 25);
+    doc.text("Time In:", x + 4, y + 34);
+    doc.text(form.timeIn, x + 24, y + 34);
+    doc.text("Time Out:", x + contentW / 2, y + 34);
+    doc.text(form.timeOut, x + contentW / 2 + 22, y + 34);
 
-    doc.setFontSize(9);
-    doc.text("Time In:", x + 4, y + 32);
-    doc.text(form.timeIn, x + 24, y + 32);
-    doc.text("Time Out:", x + contentW / 2, y + 32);
-    doc.text(form.timeOut, x + contentW / 2 + 22, y + 32);
+    doc.text("M/s.", x + 4, y + 41);
+    doc.line(x + 14, y + 42, x + contentW - 4, y + 42);
+    doc.text(form.ms, x + 16, y + 41);
 
-    doc.text("M/s.", x + 4, y + 39);
-    doc.line(x + 14, y + 40, x + contentW - 4, y + 40);
-    doc.text(form.ms, x + 16, y + 39);
+    doc.text("Vehicle No.", x + 4, y + 48);
+    doc.line(x + 26, y + 49, x + contentW - 4, y + 49);
+    doc.text(form.vehicleNo, x + 28, y + 48);
 
-    doc.text("Vehicle No.", x + 4, y + 46);
-    doc.line(x + 26, y + 47, x + contentW - 4, y + 47);
-    doc.text(form.vehicleNo, x + 28, y + 46);
+    doc.setFontSize(11);
+    doc.text("KILOGRAMS", pageW / 2, y + 56, { align: "center" });
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text("KILOGRAMS", pageW / 2, y + 54, { align: "center" });
-
-    const tableY = y + 57;
-    const labelW = 28;
+    const tableY = y + 59;
+    const labelW = 30;
     const cellW = (contentW - labelW - 8) / NUM_DIGITS;
-    const rowH = 8;
+    const rowH = 9;
     const tableX = x + 4;
 
     const rows = [
@@ -327,19 +326,17 @@ function generatePDF(forms: FormData[]) {
       { label: "Net Weight", data: form.netWeight },
     ];
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(10);
 
     rows.forEach((row, ri) => {
       const ry = tableY + ri * rowH;
       doc.rect(tableX, ry, labelW, rowH);
       doc.setFont("helvetica", "bold");
-      doc.text(row.label, tableX + 2, ry + 5.5);
-      doc.setFont("helvetica", "normal");
+      doc.text(row.label, tableX + 2, ry + 6.5);
       row.data.forEach((val, ci) => {
         const cx = tableX + labelW + ci * cellW;
         doc.rect(cx, ry, cellW, rowH);
-        doc.text(val, cx + cellW / 2, ry + 5.5, { align: "center" });
+        doc.text(val, cx + cellW / 2, ry + 6.5, { align: "center" });
       });
     });
 
