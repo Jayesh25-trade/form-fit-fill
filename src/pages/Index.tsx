@@ -340,13 +340,14 @@ function generatePDF(forms: FormData[]) {
       });
     });
 
-    doc.setFontSize(7);
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     const disclaimerY = tableY + rowH * 3 + 5;
     doc.text("Please Check Weight No Responsibility Accepted Once", pageW / 2, disclaimerY, { align: "center" });
     doc.text("Carrier Leave the Weight Bridge", pageW / 2, disclaimerY + 4, { align: "center" });
 
-    doc.setFontSize(9);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
     const bottomY = disclaimerY + 10;
     doc.text("Received Rs.", x + 4, bottomY);
     doc.text(form.receivedRs, x + 30, bottomY);
