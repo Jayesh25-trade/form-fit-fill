@@ -63,9 +63,9 @@ function calcNetWeight(gross: string[], tare: string[]): string[] {
 }
 
 const inputClass =
-  "border-b border-primary/40 bg-transparent text-foreground text-sm px-1 py-0.5 focus:outline-none focus:border-primary w-full";
+  "border-b border-primary/40 bg-transparent text-foreground text-sm font-bold px-1 py-0.5 focus:outline-none focus:border-primary w-full";
 const digitInputClass =
-  "w-full h-8 bg-transparent text-center text-sm font-mono focus:outline-none focus:bg-primary/10 border-none";
+  "w-full h-8 bg-transparent text-center text-sm font-bold font-mono focus:outline-none focus:bg-primary/10 border-none";
 
 const ReceiptForm = ({
   data,
