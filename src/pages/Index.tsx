@@ -161,37 +161,37 @@ const ReceiptForm = ({
         <p className="text-xs font-bold text-primary/60 mt-0.5">24/7 AVAILABLE</p>
       </div>
 
-      <div className="flex justify-between items-center mb-1.5 gap-4">
+      <div className="flex justify-between items-center mb-1 gap-4">
         <div className="flex items-center gap-1 flex-1">
-          <span className="text-sm font-semibold text-primary whitespace-nowrap">No.</span>
+          <span className="text-sm font-bold text-primary whitespace-nowrap">No.</span>
           <input className={inputClass + " max-w-[80px]"} value={data.no} onChange={(e) => onChange({ ...data, no: e.target.value })} />
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-sm font-semibold text-primary">Date:</span>
+          <span className="text-sm font-bold text-primary">Date:</span>
           <input type="date" className={inputClass + " max-w-[130px]"} value={data.date} onChange={(e) => onChange({ ...data, date: e.target.value })} />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-2">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 mb-1">
         <div className="flex items-center gap-1">
-          <span className="text-sm text-primary whitespace-nowrap">Time In</span>
+          <span className="text-sm font-semibold text-primary whitespace-nowrap">Time In</span>
           <input type="time" className={inputClass} value={data.timeIn} onChange={(e) => onChange({ ...data, timeIn: e.target.value })} />
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-sm text-primary whitespace-nowrap">Time Out</span>
+          <span className="text-sm font-semibold text-primary whitespace-nowrap">Time Out</span>
           <input type="time" className={inputClass} value={data.timeOut} onChange={(e) => onChange({ ...data, timeOut: e.target.value })} />
         </div>
         <div className="flex items-center gap-1 col-span-2">
-          <span className="text-sm text-primary whitespace-nowrap">M/s.</span>
+          <span className="text-sm font-semibold text-primary whitespace-nowrap">M/s.</span>
           <input className={inputClass} value={data.ms} onChange={(e) => onChange({ ...data, ms: e.target.value })} />
         </div>
         <div className="flex items-center gap-1 col-span-2">
-          <span className="text-sm text-primary whitespace-nowrap">Vehicle No.</span>
+          <span className="text-sm font-semibold text-primary whitespace-nowrap">Vehicle No.</span>
           <input className={inputClass} value={data.vehicleNo} onChange={(e) => onChange({ ...data, vehicleNo: e.target.value })} />
         </div>
       </div>
 
-      <p className="text-center text-sm font-bold text-primary mb-1">KILOGRAMS</p>
+      <p className="text-center text-sm font-extrabold text-primary mb-0.5">KILOGRAMS</p>
       <table className="w-full border-collapse border border-primary mb-2">
         <tbody>
           {(["grossWeight", "tareWeight"] as const).map((type) => (
