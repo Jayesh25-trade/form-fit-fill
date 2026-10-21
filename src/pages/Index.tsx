@@ -631,7 +631,7 @@ function generateGajananPDF(forms: FormData[]) {
   const pageW = 210;
   const margin = 10;
   const contentW = pageW - margin * 2;
-  const slipH = 132;
+  const slipH = 134;
   const navy: [number, number, number] = [27, 58, 107];
   const red: [number, number, number] = [192, 57, 43];
   const beige: [number, number, number] = [247, 236, 217];
@@ -641,7 +641,7 @@ function generateGajananPDF(forms: FormData[]) {
 
   forms.forEach((form, idx) => {
     const isSecondOnPage = idx % 2 === 1;
-    const yStart = isSecondOnPage ? margin + slipH + 6 : margin;
+    const yStart = isSecondOnPage ? margin + slipH + 4 : margin;
 
     if (idx > 0 && !isSecondOnPage) doc.addPage();
 
