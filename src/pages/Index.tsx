@@ -659,20 +659,20 @@ function generateGajananPDF(forms: FormData[]) {
     doc.setTextColor(...red);
     doc.setFont("times", "bold");
     doc.setFontSize(12);
-    doc.text("|| Shree ||", pageW / 2, y + 8, { align: "center" });
+    doc.text("|| Shree ||", pageW / 2, y + 6.5, { align: "center" });
 
     doc.setTextColor(...navy);
     doc.setFont("times", "bold");
     doc.setFontSize(26);
-    doc.text("GAJANAN WEIGHBRIDGE", pageW / 2, y + 17, { align: "center" });
+    doc.text("GAJANAN WEIGHBRIDGE", pageW / 2, y + 14.5, { align: "center" });
 
     doc.setTextColor(...dark);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text(`${GAJANAN_ADDRESS}  |  Mob : ${GAJANAN_MOB}`, pageW / 2, y + 23, { align: "center" });
+    doc.text(`${GAJANAN_ADDRESS}  |  Mob : ${GAJANAN_MOB}`, pageW / 2, y + 20, { align: "center" });
 
     // 24/7 AVAILABLE pill with side lines
-    const pillY = y + 26;
+    const pillY = y + 23;
     doc.setDrawColor(...red);
     doc.setLineWidth(0.6);
     doc.line(x + 4, pillY + 2, pageW / 2 - 26, pillY + 2);
