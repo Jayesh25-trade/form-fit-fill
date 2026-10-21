@@ -697,41 +697,25 @@ function generateGajananPDF(forms: FormData[]) {
     };
 
     // No. and Date
-    const rowY = y + 33;
-    doc.setTextColor(...dark);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("No.", x + 4, rowY + 4.5);
-    beigeBox(x + 14, rowY, 30, 7, form.no);
-    doc.text("Date :", x + contentW - 62, rowY + 4.5);
-    beigeBox(x + contentW - 44, rowY, 40, 7, form.date);
-
+    const rowY = y + 29;
+    ...
     // Time In / Time Out
-    const timeY = rowY + 10;
-    doc.setTextColor(...dark);
-    doc.text("Time In :", x + 4, timeY + 4.5);
-    beigeBox(x + 24, timeY, 40, 7, form.timeIn);
-    doc.text("Time Out :", x + contentW / 2 + 4, timeY + 4.5);
-    beigeBox(x + contentW / 2 + 28, timeY, 40, 7, form.timeOut);
-
+    const timeY = rowY + 9;
+    ...
     // M/s.
-    const msY = timeY + 10;
-    doc.text("M/s.", x + 4, msY + 4.5);
-    beigeBox(x + 16, msY, contentW - 20, 7, form.ms);
-
+    const msY = timeY + 9;
+    ...
     // Vehicle No.
-    const vehY = msY + 10;
-    doc.text("Vehicle No.", x + 4, vehY + 4.5);
-    beigeBox(x + 30, vehY, contentW - 34, 7, form.vehicleNo);
-
+    const vehY = msY + 9;
+    ...
     // Kilograms table
-    const tableY = vehY + 11;
+    const tableY = vehY + 10;
     const labelW = 34;
     const tableX = x + 4;
     const tableW = contentW - 8;
     const cellW = (tableW - labelW) / NUM_DIGITS;
     const headH = 8;
-    const rowH = 9;
+    const rowH = 8.5;
 
     // Header row
     doc.setFillColor(...tableHead);
