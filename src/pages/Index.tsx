@@ -765,7 +765,7 @@ function generateGajananPDF(forms: FormData[]) {
     beigeBox(x + 30, bottomY, 40, 7, form.receivedRs);
     doc.text("For,", x + contentW - 30, bottomY + 4.5);
 
-    const rsY = bottomY + 10;
+    const rsY = bottomY + 9;
     doc.text("Rs.", x + 4, rsY + 4.5);
     beigeBox(x + 14, rsY, 56, 7, form.rs);
 
@@ -773,10 +773,10 @@ function generateGajananPDF(forms: FormData[]) {
     doc.setDrawColor(...dark);
     doc.setLineWidth(0.4);
     doc.setLineDashPattern([0.8, 1.2], 0);
-    doc.line(x + contentW - 42, rsY + 5, x + contentW - 4, rsY + 5);
+    doc.line(x + contentW - 42, rsY + 4, x + contentW - 4, rsY + 4);
     doc.setLineDashPattern([], 0);
     doc.setFontSize(10);
-    doc.text("Signature", x + contentW - 23, rsY + 10, { align: "center" });
+    doc.text("Signature", x + contentW - 23, rsY + 8.5, { align: "center" });
   });
 
   doc.save("Gajanan_Weighbridge_Receipts.pdf");
