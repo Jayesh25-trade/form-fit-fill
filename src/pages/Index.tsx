@@ -755,20 +755,10 @@ function generateGajananPDF(forms: FormData[]) {
     });
 
     // Disclaimer
-    const disclaimerY = tableY + headH + rowH * 3 + 6;
-    doc.setTextColor(...red);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text("Please Check Weight No Responsibility Accepted Once", pageW / 2, disclaimerY, { align: "center" });
-    doc.text("Carrier Leave the Weight Bridge", pageW / 2, disclaimerY + 4.5, { align: "center" });
-
-    // Red divider line
-    doc.setDrawColor(...red);
-    doc.setLineWidth(0.6);
-    doc.line(x + 4, disclaimerY + 8, x + contentW - 4, disclaimerY + 8);
-
+    const disclaimerY = tableY + headH + rowH * 3 + 5;
+    ...
     // Bottom row
-    const bottomY = disclaimerY + 12;
+    const bottomY = disclaimerY + 10;
     doc.setTextColor(...dark);
     doc.setFontSize(11);
     doc.text("Received Rs.", x + 4, bottomY + 4.5);
