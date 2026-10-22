@@ -811,7 +811,12 @@ function generateGajananPDF(forms: FormData[]) {
 // ===================== MAIN PAGE =====================
 
 const Index = () => {
-  const [forms, setForms] = useState<FormData[]>([emptyForm()]);
+  const [activeFormat, setActiveFormat] = useState<BillFormat>("ss");
+  const [ssForms, setSsForms] = useState<FormData[]>([emptyForm("ss")]);
+  const [gajananForms, setGajananForms] = useState<FormData[]>([emptyForm("gajanan")]);
+
+  const forms = activeFormat === "ss" ? ssForms : gajananForms;
+  const setForms = activeFormat === "ss" ? setSsForms : setGajananForms;
 
   const updateForm = (index: number, data: FormData) => {
     const updated = [...forms];
@@ -819,33 +824,55 @@ const Index = () => {
     setForms(updated);
   };
 
-  const addForm = (format: BillFormat) => setForms([...forms, emptyForm(format)]);
-  const removeForm = (index: number) => setForms(forms.filter((_, i) => i !== index));
+  const addForm = () => setForms([...forms, emptyForm(activeFormat)]);
+  const removeForm = (index: number) => {
+    if (forms.length <= 1) return;
+    setForms(forms.filter((_, i) => i !== index));
+  };
 
   const downloadPDF = () => {
-    const ssForms = forms.filter((f) => (f.format || "ss") === "ss");
-    const gajananForms = forms.filter((f) => f.format === "gajanan");
-    if (ssForms.length > 0) generatePDF(ssForms);
-    if (gajananForms.length > 0) generateGajananPDF(gajananForms);
+    if (activeFormat === "ss") {
+      generatePDF(ssForms);
+    } else {
+      generateGajananPDF(gajananForms);
+    }
   };
+
+  const isSs = activeFormat === "ss";
 
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-10 bg-card border-b border-border px-4 py-3 flex items-center justify-between shadow-sm flex-wrap gap-2">
-        <h1 className="text-lg font-bold text-primary">Weighbridge Receipts</h1>
         <div className="flex gap-2 flex-wrap">
           <button
-            onClick={() => addForm("ss")}
-            className="px-4 py-1.5 text-sm rounded bg-secondary text-secondary-foreground hover:opacity-80 active:scale-[0.97] transition-transform"
+            onClick={() => setActiveFormat("ss")}
+            className={`px-4 py-1.5 text-sm rounded transition-transform active:scale-[0.97] ${
+              isSs
+                ? "bg-primary text-primary-foreground font-bold shadow"
+                : "bg-secondary text-secondary-foreground hover:opacity-80"
+            }`}
           >
-            + S.S. Dharmkata
+            S.S. Dharmkata
           </button>
           <button
-            onClick={() => addForm("gajanan")}
-            className="px-4 py-1.5 text-sm rounded text-white hover:opacity-90 active:scale-[0.97] transition-transform"
-            style={{ backgroundColor: G_NAVY }}
+            onClick={() => setActiveFormat("gajanan")}
+            className={`px-4 py-1.5 text-sm rounded transition-transform active:scale-[0.97] ${
+              !isSs ? "text-white font-bold shadow" : "bg-secondary text-secondary-foreground hover:opacity-80"
+            }`}
+            style={!isSs ? { backgroundColor: G_NAVY } : undefined}
           >
-            + Gajanan Weighbridge
+            Gajanan Weighbridge
+          </button>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={addForm}
+            className={`px-4 py-1.5 text-sm rounded text-white hover:opacity-90 active:scale-[0.97] transition-transform ${
+              isSs ? "bg-primary" : ""
+            }`}
+            style={!isSs ? { backgroundColor: G_NAVY } : undefined}
+          >
+            + Add Receipt
           </button>
           <button
             onClick={downloadPDF}
@@ -858,8 +885,8 @@ const Index = () => {
 
       <div className="max-w-2xl mx-auto py-6 px-4 space-y-4">
         {forms.map((form, i) =>
-          form.format === "gajanan" ? (
-            <GajananReceiptForm
+          isSs ? (
+            <ReceiptForm
               key={i}
               data={form}
               onChange={(d) => updateForm(i, d)}
@@ -868,7 +895,7 @@ const Index = () => {
               canRemove={forms.length > 1}
             />
           ) : (
-            <ReceiptForm
+            <GajananReceiptForm
               key={i}
               data={form}
               onChange={(d) => updateForm(i, d)}
