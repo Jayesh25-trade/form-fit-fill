@@ -698,16 +698,32 @@ function generateGajananPDF(forms: FormData[]) {
 
     // No. and Date
     const rowY = y + 29;
-    ...
+    doc.setTextColor(...dark);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("No.", x + 4, rowY + 4.5);
+    beigeBox(x + 14, rowY, 30, 7, form.no);
+    doc.text("Date :", x + contentW - 62, rowY + 4.5);
+    beigeBox(x + contentW - 44, rowY, 40, 7, form.date);
+
     // Time In / Time Out
     const timeY = rowY + 9;
-    ...
+    doc.setTextColor(...dark);
+    doc.text("Time In :", x + 4, timeY + 4.5);
+    beigeBox(x + 24, timeY, 40, 7, form.timeIn);
+    doc.text("Time Out :", x + contentW / 2 + 4, timeY + 4.5);
+    beigeBox(x + contentW / 2 + 28, timeY, 40, 7, form.timeOut);
+
     // M/s.
     const msY = timeY + 9;
-    ...
+    doc.text("M/s.", x + 4, msY + 4.5);
+    beigeBox(x + 16, msY, contentW - 20, 7, form.ms);
+
     // Vehicle No.
     const vehY = msY + 9;
-    ...
+    doc.text("Vehicle No.", x + 4, vehY + 4.5);
+    beigeBox(x + 30, vehY, contentW - 34, 7, form.vehicleNo);
+
     // Kilograms table
     const tableY = vehY + 10;
     const labelW = 34;
@@ -756,7 +772,17 @@ function generateGajananPDF(forms: FormData[]) {
 
     // Disclaimer
     const disclaimerY = tableY + headH + rowH * 3 + 5;
-    ...
+    doc.setTextColor(...red);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("Please Check Weight No Responsibility Accepted Once", pageW / 2, disclaimerY, { align: "center" });
+    doc.text("Carrier Leave the Weight Bridge", pageW / 2, disclaimerY + 4.5, { align: "center" });
+
+    // Red divider line
+    doc.setDrawColor(...red);
+    doc.setLineWidth(0.6);
+    doc.line(x + 4, disclaimerY + 8, x + contentW - 4, disclaimerY + 8);
+
     // Bottom row
     const bottomY = disclaimerY + 10;
     doc.setTextColor(...dark);
