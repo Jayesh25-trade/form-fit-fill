@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import jsPDF from "jspdf";
+import ScanSlipDialog, { type ScanChoice } from "@/components/ScanSlipDialog";
+import { toDigits, type ParsedSlip } from "@/lib/slipParser";
 
 const LOCATIONS = {
   shegaon: {
@@ -838,6 +840,36 @@ const Index = () => {
     }
   };
 
+  const handleScan = (slip: ParsedSlip, choice: ScanChoice) => {
+    const gross = toDigits(slip.gross, NUM_DIGITS);
+    const tare = toDigits(slip.tare, NUM_DIGITS);
+    const filled: FormData = {
+      ...emptyForm(choice.format),
+      location: choice.location,
+      no: slip.no,
+      date: slip.date,
+      timeIn: slip.timeIn,
+      timeOut: slip.timeOut,
+      vehicleNo: slip.vehicleNo,
+      grossWeight: gross,
+      tareWeight: tare,
+      netWeight: calcNetWeight(gross, tare),
+      receivedRs: slip.rs,
+      rs: slip.rs,
+    };
+    const isBlank = (f: FormData) =>
+      !f.no && !f.vehicleNo && !f.ms && f.grossWeight.every((d) => !d) && f.tareWeight.every((d) => !d);
+    const setter = choice.format === "ss" ? setSsForms : setGajananForms;
+    setter((prev) => {
+      const idx = prev.findIndex(isBlank);
+      if (idx === -1) return [...prev, filled];
+      const copy = [...prev];
+      copy[idx] = filled;
+      return copy;
+    });
+    setActiveFormat(choice.format);
+  };
+
   const isSs = activeFormat === "ss";
 
   return (
@@ -865,6 +897,7 @@ const Index = () => {
           </button>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <ScanSlipDialog onDone={handleScan} />
           <button
             onClick={addForm}
             className={`px-4 py-1.5 text-sm rounded text-white hover:opacity-90 active:scale-[0.97] transition-transform ${
