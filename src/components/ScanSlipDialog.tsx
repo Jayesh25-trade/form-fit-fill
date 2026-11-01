@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { parseSlipText, type ParsedSlip } from "@/lib/slipParser";
+import type { ParsedSlip } from "@/lib/slipParser";
+import { supabase } from "@/integrations/supabase/client";
 
 export type ScanChoice = { format: "ss" | "gajanan"; location: "shegaon" | "wadkhal" | "kasoda" };
 
@@ -7,43 +8,37 @@ interface Props {
   onDone: (slip: ParsedSlip, choice: ScanChoice) => void;
 }
 
-async function prepareImage(file: File, rotate: number): Promise<string> {
-  // Rotate + grayscale + contrast boost + upscale helps OCR on dot-matrix prints
+async function shrinkImage(file: File): Promise<string> {
   const img = await createImageBitmap(file);
-  const scale = Math.min(2, 2400 / Math.max(img.width, img.height));
-  const w = img.width * scale;
-  const h = img.height * scale;
-  const side = rotate % 180 !== 0;
+  const scale = Math.min(1, 1800 / Math.max(img.width, img.height));
   const c = document.createElement("canvas");
-  c.width = side ? h : w;
-  c.height = side ? w : h;
-  const ctx = c.getContext("2d")!;
-  ctx.filter = "grayscale(1) contrast(1.6)";
-  ctx.translate(c.width / 2, c.height / 2);
-  ctx.rotate((rotate * Math.PI) / 180);
-  ctx.drawImage(img, -w / 2, -h / 2, w, h);
-  return c.toDataURL("image/png");
+  c.width = img.width * scale;
+  c.height = img.height * scale;
+  c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.85);
 }
 
-async function runOcr(file: File, onProgress: (p: number) => void): Promise<string> {
-  const { createWorker } = await import("tesseract.js");
-  const worker = await createWorker("eng", 1, {
-    logger: (m: { status: string; progress: number }) => {
-      if (m.status === "recognizing text") onProgress(m.progress);
-    },
-  });
-  let best = "";
-  // Try 4 rotations (slips are often photographed sideways), keep the one with most hits
-  for (const rotate of [0, 90, 270, 180]) {
-    const { data } = await worker.recognize(await prepareImage(file, rotate));
-    console.log("[ocr]", rotate, data.text);
-    const score = (data.text.match(/GROSS|TARE|NET|VEH|NO/gi) || []).length;
-    const bestScore = (best.match(/GROSS|TARE|NET|VEH|NO/gi) || []).length;
-    if (score > bestScore) best = data.text;
-    if (score >= 4) break;
+async function readSlip(file: File): Promise<ParsedSlip> {
+  const image = await shrinkImage(file);
+  const { data, error } = await supabase.functions.invoke("scan-slip", { body: { image } });
+  if (error) {
+    let msg = "Could not read the slip.";
+    try {
+      msg = (await (error as { context?: Response }).context?.json())?.error || msg;
+    } catch { /* keep default */ }
+    throw new Error(msg);
   }
-  await worker.terminate();
-  return best;
+  const clean = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  return {
+    no: clean(data.no),
+    vehicleNo: clean(data.vehicleNo).replace(/\s/g, "").toUpperCase(),
+    gross: clean(data.gross).replace(/\D/g, ""),
+    tare: clean(data.tare).replace(/\D/g, ""),
+    date: /^\d{4}-\d{2}-\d{2}$/.test(clean(data.date)) ? clean(data.date) : "",
+    timeIn: /^\d{2}:\d{2}$/.test(clean(data.timeIn)) ? clean(data.timeIn) : "",
+    timeOut: /^\d{2}:\d{2}$/.test(clean(data.timeOut)) ? clean(data.timeOut) : "",
+    rs: clean(data.rs).replace(/\D/g, ""),
+  };
 }
 
 const ScanSlipDialog = ({ onDone }: Props) => {
@@ -52,7 +47,6 @@ const ScanSlipDialog = ({ onDone }: Props) => {
   const [preview, setPreview] = useState("");
   const [format, setFormat] = useState<"ss" | "gajanan" | null>(null);
   const [busy, setBusy] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
 
   const reset = () => {
@@ -60,7 +54,6 @@ const ScanSlipDialog = ({ onDone }: Props) => {
     setPreview("");
     setFormat(null);
     setBusy(false);
-    setProgress(0);
     setError("");
     if (fileRef.current) fileRef.current.value = "";
   };
@@ -70,8 +63,7 @@ const ScanSlipDialog = ({ onDone }: Props) => {
     setBusy(true);
     setError("");
     try {
-      const text = await runOcr(file, setProgress);
-      const slip = parseSlipText(text);
+      const slip = await readSlip(file);
       if (!slip.gross && !slip.tare && !slip.vehicleNo) {
         setError("Could not read the slip. Try a clearer, straight photo.");
         setBusy(false);
@@ -79,8 +71,8 @@ const ScanSlipDialog = ({ onDone }: Props) => {
       }
       onDone(slip, choice);
       reset();
-    } catch {
-      setError("Scanning failed. Please try again.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Scanning failed. Please try again.");
       setBusy(false);
     }
   };
@@ -115,10 +107,7 @@ const ScanSlipDialog = ({ onDone }: Props) => {
 
             {busy ? (
               <div className="space-y-2 py-2">
-                <p className="text-center font-bold">Reading slip… {Math.round(progress * 100)}%</p>
-                <div className="h-2 bg-secondary rounded overflow-hidden">
-                  <div className="h-full bg-primary transition-all" style={{ width: `${progress * 100}%` }} />
-                </div>
+                <p className="text-center font-bold animate-pulse">Reading slip…</p>
               </div>
             ) : format === null ? (
               <>
