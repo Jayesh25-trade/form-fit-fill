@@ -7,16 +7,21 @@ interface Props {
   onDone: (slip: ParsedSlip, choice: ScanChoice) => void;
 }
 
-async function prepareImage(file: File): Promise<string> {
-  // Grayscale + contrast boost + upscale helps OCR on dot-matrix prints
+async function prepareImage(file: File, rotate: number): Promise<string> {
+  // Rotate + grayscale + contrast boost + upscale helps OCR on dot-matrix prints
   const img = await createImageBitmap(file);
   const scale = Math.min(2, 2400 / Math.max(img.width, img.height));
+  const w = img.width * scale;
+  const h = img.height * scale;
+  const side = rotate % 180 !== 0;
   const c = document.createElement("canvas");
-  c.width = img.width * scale;
-  c.height = img.height * scale;
+  c.width = side ? h : w;
+  c.height = side ? w : h;
   const ctx = c.getContext("2d")!;
-  ctx.filter = "grayscale(1) contrast(1.8)";
-  ctx.drawImage(img, 0, 0, c.width, c.height);
+  ctx.filter = "grayscale(1) contrast(1.6)";
+  ctx.translate(c.width / 2, c.height / 2);
+  ctx.rotate((rotate * Math.PI) / 180);
+  ctx.drawImage(img, -w / 2, -h / 2, w, h);
   return c.toDataURL("image/png");
 }
 
@@ -27,11 +32,11 @@ async function runOcr(file: File, onProgress: (p: number) => void): Promise<stri
       if (m.status === "recognizing text") onProgress(m.progress);
     },
   });
-  const src = await prepareImage(file);
   let best = "";
   // Try 4 rotations (slips are often photographed sideways), keep the one with most hits
   for (const rotate of [0, 90, 270, 180]) {
-    const { data } = await worker.recognize(src, { rotateAuto: true, rotateRadians: (rotate * Math.PI) / 180 } as never);
+    const { data } = await worker.recognize(await prepareImage(file, rotate));
+    console.log("[ocr]", rotate, data.text);
     const score = (data.text.match(/GROSS|TARE|NET|VEH|NO/gi) || []).length;
     const bestScore = (best.match(/GROSS|TARE|NET|VEH|NO/gi) || []).length;
     if (score > bestScore) best = data.text;
