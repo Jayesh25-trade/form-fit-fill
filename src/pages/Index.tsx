@@ -71,9 +71,9 @@ function calcNetWeight(gross: string[], tare: string[]): string[] {
 }
 
 const inputClass =
-  "border-b border-primary/40 bg-transparent text-foreground text-sm font-bold px-1 py-0.5 focus:outline-none focus:border-primary w-full";
+  "min-w-0 w-full border border-input bg-background px-2.5 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const digitInputClass =
-  "w-full h-8 bg-transparent text-center text-sm font-bold font-mono focus:outline-none focus:bg-primary/10 border-none";
+  "w-full h-10 bg-transparent text-center text-base font-bold font-mono focus:outline-none focus:bg-primary/10 border-none";
 
 // Gajanan format colors (from the reference bill)
 const G_NAVY = "#1b3a6b";
@@ -139,23 +139,35 @@ const ReceiptForm = ({ data, onChange, index, onRemove, canRemove }: ReceiptForm
   );
 
   return (
-    <div className="border-2 border-primary rounded px-4 py-3 bg-card relative">
+    <section className="overflow-hidden border border-border bg-card shadow-sm relative">
       {canRemove && (
         <button
           onClick={onRemove}
-          className="absolute top-2 right-2 text-xs text-muted-foreground hover:text-destructive transition-colors"
+          className="absolute top-3 right-3 z-10 border border-border bg-background px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive transition-colors no-print"
         >
-          ✕ Remove
+          Remove receipt
         </button>
       )}
-      <p className="absolute top-1 left-3 text-[10px] text-muted-foreground">
-        Receipt #{index + 1}
-      </p>
+      <div className="bg-primary px-5 py-4 text-primary-foreground">
+        <div className="flex flex-wrap items-start justify-between gap-3 pr-28">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide opacity-80">Weighment receipt</p>
+            <h2 className="mt-1 text-2xl font-extrabold leading-tight">S.S. DHARMKATA</h2>
+            <p className="mt-1 text-sm font-medium">{(LOCATIONS[data.location || "shegaon"]).address} · Mob: 9970041700</p>
+          </div>
+          <div className="text-left sm:text-right">
+            <p className="text-sm font-bold">24/7 AVAILABLE</p>
+            <p className="mt-1 text-xs opacity-80">Receipt {String(index + 1).padStart(2, "0")}</p>
+          </div>
+        </div>
+      </div>
 
       {/* Location selector */}
-      <div className="mt-1 mb-0.5 flex justify-center">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/50 px-5 py-3">
+        <label className="text-xs font-bold uppercase tracking-wide text-muted-foreground" htmlFor={`ss-location-${index}`}>Weighbridge location</label>
         <select
-          className="text-xs bg-secondary text-secondary-foreground rounded px-2 py-0.5 border border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary"
+          id={`ss-location-${index}`}
+          className="border border-input bg-background px-3 py-2 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={data.location || "shegaon"}
           onChange={(e) => onChange({ ...data, location: e.target.value as LocationKey })}
         >
@@ -165,50 +177,47 @@ const ReceiptForm = ({ data, onChange, index, onRemove, canRemove }: ReceiptForm
         </select>
       </div>
 
-      {/* Header */}
-      <div className="text-center mb-1">
-        <p className="text-xs font-semibold text-primary/70">|| Shree ||</p>
-        <h2 className="text-xl font-extrabold text-primary tracking-wide leading-tight">
-          S.S. DHARMKATA
-        </h2>
-        <p className="text-sm font-semibold text-primary/80 border-b border-primary/50 inline-block pb-0.5">
-          {(LOCATIONS[data.location || "shegaon"]).address} Mob : 9970041700
-        </p>
-        <p className="text-xs font-bold text-primary/60 mt-0.5">24/7 AVAILABLE</p>
-      </div>
+      <div className="space-y-5 p-5 sm:p-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label className="block space-y-1.5">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Receipt No.</span>
+            <input aria-label="Receipt No." className={inputClass} value={data.no} onChange={(e) => onChange({ ...data, no: e.target.value })} />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Date</span>
+            <input aria-label="Date" type="date" className={inputClass} value={data.date} onChange={(e) => onChange({ ...data, date: e.target.value })} />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Time In</span>
+            <input aria-label="Time In" type="time" className={inputClass} value={data.timeIn} onChange={(e) => onChange({ ...data, timeIn: e.target.value })} />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Time Out</span>
+            <input aria-label="Time Out" type="time" className={inputClass} value={data.timeOut} onChange={(e) => onChange({ ...data, timeOut: e.target.value })} />
+          </label>
+          <label className="block space-y-1.5 sm:col-span-2">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">M/s. / Party Name</span>
+            <input aria-label="M/s. / Party Name" className={inputClass} value={data.ms} onChange={(e) => onChange({ ...data, ms: e.target.value })} />
+          </label>
+          <label className="block space-y-1.5 sm:col-span-2">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Vehicle No.</span>
+            <input aria-label="Vehicle No." className={inputClass + " uppercase"} value={data.vehicleNo} onChange={(e) => onChange({ ...data, vehicleNo: e.target.value.toUpperCase() })} />
+          </label>
+        </div>
 
-      <div className="flex justify-between items-center mb-1 gap-4">
-        <div className="flex items-center gap-1 flex-1">
-          <span className="text-sm font-bold text-primary whitespace-nowrap">No.</span>
-          <input className={inputClass + " max-w-[80px]"} value={data.no} onChange={(e) => onChange({ ...data, no: e.target.value })} />
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-sm font-bold text-primary">Date:</span>
-          <input type="date" className={inputClass + " max-w-[130px]"} value={data.date} onChange={(e) => onChange({ ...data, date: e.target.value })} />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 mb-1">
-        <div className="flex items-center gap-1">
-          <span className="text-sm font-semibold text-primary whitespace-nowrap">Time In</span>
-          <input type="time" className={inputClass} value={data.timeIn} onChange={(e) => onChange({ ...data, timeIn: e.target.value })} />
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="text-sm font-semibold text-primary whitespace-nowrap">Time Out</span>
-          <input type="time" className={inputClass} value={data.timeOut} onChange={(e) => onChange({ ...data, timeOut: e.target.value })} />
-        </div>
-        <div className="flex items-center gap-1 col-span-2">
-          <span className="text-sm font-semibold text-primary whitespace-nowrap">M/s.</span>
-          <input className={inputClass} value={data.ms} onChange={(e) => onChange({ ...data, ms: e.target.value })} />
-        </div>
-        <div className="flex items-center gap-1 col-span-2">
-          <span className="text-sm font-semibold text-primary whitespace-nowrap">Vehicle No.</span>
-          <input className={inputClass} value={data.vehicleNo} onChange={(e) => onChange({ ...data, vehicleNo: e.target.value })} />
-        </div>
-      </div>
-
-      <p className="text-center text-sm font-extrabold text-primary mb-0.5">KILOGRAMS</p>
-      <table className="w-full border-collapse border border-primary mb-2">
+        <div>
+          <div className="mb-2 flex items-center justify-between border-b border-border pb-2">
+            <h3 className="text-sm font-extrabold uppercase tracking-wide text-primary">Weight Details</h3>
+            <span className="text-xs font-semibold text-muted-foreground">Kilograms (kg)</span>
+          </div>
+          <div className="overflow-x-auto border border-border">
+      <table className="w-full min-w-[470px] border-collapse">
+        <thead>
+          <tr className="bg-muted/70 text-left text-xs font-bold uppercase text-muted-foreground">
+            <th className="border-b border-r border-border px-3 py-2">Weight Type</th>
+            {data.grossWeight.map((_, i) => <th key={i} className="border-b border-r border-border px-1 py-2 text-center">{i + 1}</th>)}
+          </tr>
+        </thead>
         <tbody>
           {(["grossWeight", "tareWeight"] as const).map((type) => (
             <tr key={type}>
@@ -216,7 +225,7 @@ const ReceiptForm = ({ data, onChange, index, onRemove, canRemove }: ReceiptForm
                 {type === "grossWeight" ? "Gross Weight" : "Tare Weight"}
               </td>
               {data[type].map((val, i) => (
-                <td key={i} className="border border-primary p-0">
+              <td key={i} className="border-b border-r border-border p-0">
                   <input
                     ref={(el) => {
                       (type === "grossWeight" ? grossRefs : tareRefs).current[i] = el;
@@ -234,37 +243,37 @@ const ReceiptForm = ({ data, onChange, index, onRemove, canRemove }: ReceiptForm
             </tr>
           ))}
           <tr>
-            <td className="border border-primary px-2 py-0.5 text-xs font-semibold text-primary w-28">Net Weight</td>
+            <td className="border-r border-border bg-primary/5 px-3 py-2 text-xs font-bold text-primary">Net Weight</td>
             {data.netWeight.map((val, i) => (
-              <td key={i} className="border border-primary p-0 bg-secondary/30">
-                <span className="block text-center text-sm px-0.5 font-semibold font-mono h-8 leading-8">{val}</span>
+              <td key={i} className="border-r border-border bg-primary/5 p-0">
+                <span className="block text-center text-base px-0.5 font-bold font-mono h-10 leading-10 text-primary">{val}</span>
               </td>
             ))}
           </tr>
         </tbody>
       </table>
-
-      <p className="text-[10px] text-primary/70 text-center mb-2 leading-tight">
-        Please Check Weight No Responsibility Accepted Once<br />Carrier Leave the Weight Bridge
-      </p>
-
-      <div className="flex justify-between items-end gap-4">
-        <div className="flex-1 space-y-1">
-          <div className="flex items-center gap-1">
-            <span className="text-sm text-primary">Received Rs.</span>
-            <input className={inputClass + " max-w-[100px]"} value={data.receivedRs} onChange={(e) => onChange({ ...data, receivedRs: e.target.value })} />
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-sm text-primary">Rs.</span>
-            <input className={inputClass + " max-w-[100px]"} value={data.rs} onChange={(e) => onChange({ ...data, rs: e.target.value })} />
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-primary mb-4">For,</p>
-          <p className="text-sm text-primary border-t border-primary/40 pt-0.5 px-4">Signature</p>
+
+        <div className="grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2">
+          <label className="block space-y-1.5">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Received Rs.</span>
+            <input aria-label="Received Rs." className={inputClass} value={data.receivedRs} onChange={(e) => onChange({ ...data, receivedRs: e.target.value })} />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Rs.</span>
+            <input aria-label="Rs." className={inputClass} value={data.rs} onChange={(e) => onChange({ ...data, rs: e.target.value })} />
+          </label>
+        </div>
+        <div className="flex flex-wrap items-end justify-between gap-4 border-t border-border pt-4">
+          <p className="max-w-md text-xs leading-relaxed text-muted-foreground">Please check weight. No responsibility accepted once carrier leaves the weighbridge.</p>
+          <div className="min-w-40 text-center">
+            <p className="mb-6 text-sm font-semibold text-foreground">For S.S. Dharmkata</p>
+            <p className="border-t border-dotted border-foreground/60 pt-1 text-xs font-semibold text-muted-foreground">Authorized Signature</p>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
