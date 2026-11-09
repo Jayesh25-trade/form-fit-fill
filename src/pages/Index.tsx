@@ -3,6 +3,7 @@ import jsPDF from "jspdf";
 import ScanSlipDialog, { type ScanChoice } from "@/components/ScanSlipDialog";
 import { toDigits, type ParsedSlip } from "@/lib/slipParser";
 import { Button } from "@/components/ui/button";
+import { Download, Plus, Scale, Truck } from "lucide-react";
 
 const LOCATIONS = {
   shegaon: {
@@ -75,6 +76,8 @@ const inputClass =
   "min-w-0 w-full border border-input bg-background px-2.5 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const digitInputClass =
   "w-full h-10 bg-transparent text-center text-base font-bold font-mono focus:outline-none focus:bg-primary/10 border-none";
+const weightInputClass =
+  "w-full border border-input bg-background px-3 py-3 text-xl font-bold font-mono text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 // Gajanan format colors (from the reference bill)
 const G_NAVY = "#1b3a6b";
@@ -95,6 +98,49 @@ interface ReceiptFormProps {
   onRemove: () => void;
   canRemove: boolean;
 }
+
+interface WeightFieldsProps {
+  data: FormData;
+  onChange: (data: FormData) => void;
+  gajanan?: boolean;
+}
+
+const WeightFields = ({ data, onChange, gajanan = false }: WeightFieldsProps) => {
+  const changeWeight = (type: "grossWeight" | "tareWeight", value: string) => {
+    const next = { ...data, [type]: toDigits(value.replace(/\D/g, "").slice(0, NUM_DIGITS), NUM_DIGITS) };
+    next.netWeight = calcNetWeight(next.grossWeight, next.tareWeight);
+    onChange(next);
+  };
+  const fields = [
+    { key: "grossWeight" as const, label: "Gross Weight" },
+    { key: "tareWeight" as const, label: "Tare Weight" },
+  ];
+  const inputStyle = gajanan ? gajananDigitClass : weightInputClass;
+  const value = (digits: string[]) => digits.join("").replace(/^0+/, "");
+
+  return (
+    <div className="space-y-3 border-y border-border py-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-extrabold uppercase tracking-wide" style={gajanan ? { color: G_NAVY } : undefined}>Weight Details</h3>
+        <span className="text-xs font-semibold text-muted-foreground">All weights in kg</span>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {fields.map(({ key, label }) => (
+          <label key={key} className="block space-y-1.5">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
+            <input aria-label={label} className={inputStyle} type="text" inputMode="numeric" maxLength={NUM_DIGITS} value={value(data[key])} onChange={(e) => changeWeight(key, e.target.value)} />
+          </label>
+        ))}
+        <div className="space-y-1.5">
+          <span className="block text-xs font-bold uppercase tracking-wide text-muted-foreground">Net Weight</span>
+          <div aria-label="Net Weight" className={`flex h-[50px] items-center border border-border px-3 font-mono text-xl font-extrabold ${gajanan ? "" : "border-primary/40 bg-primary/5 text-primary"}`} style={gajanan ? { backgroundColor: G_TABLE_HEAD, color: G_NAVY } : undefined}>
+            {value(data.netWeight) || "—"}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ReceiptForm = ({ data, onChange, index, onRemove, canRemove }: ReceiptFormProps) => {
   const grossRefs = useRef<(HTMLInputElement | null)[]>([]);
