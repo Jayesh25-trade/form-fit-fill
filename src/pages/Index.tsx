@@ -1,8 +1,9 @@
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
 import jsPDF from "jspdf";
 import ScanSlipDialog, { type ScanChoice } from "@/components/ScanSlipDialog";
-import { toDigits, type ParsedSlip } from "@/lib/slipParser";
+import { calcNetWeight, toDigits, type ParsedSlip } from "@/lib/slipParser";
 import { Button } from "@/components/ui/button";
+import { Download, Plus, Scale, Truck } from "lucide-react";
 
 const LOCATIONS = {
   shegaon: {
@@ -73,8 +74,8 @@ function calcNetWeight(gross: string[], tare: string[]): string[] {
 
 const inputClass =
   "min-w-0 w-full border border-input bg-background px-2.5 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-const digitInputClass =
-  "w-full h-10 bg-transparent text-center text-base font-bold font-mono focus:outline-none focus:bg-primary/10 border-none";
+const weightInputClass =
+  "w-full border border-input bg-background px-3 py-3 text-xl font-bold font-mono text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 // Gajanan format colors (from the reference bill)
 const G_NAVY = "#1b3a6b";
@@ -86,7 +87,7 @@ const G_TABLE_LABEL = "#e8eff7";
 const gajananBoxClass =
   "w-full bg-[#f7ecd9] border border-[#d8c9a8] rounded-sm px-2 py-1 text-base font-bold text-[#1b3a6b] focus:outline-none focus:ring-1 focus:ring-[#1b3a6b]";
 const gajananDigitClass =
-  "w-full h-9 bg-transparent text-center text-lg font-bold font-mono text-[#1b3a6b] focus:outline-none focus:bg-[#dbe7f3] border-none";
+  "w-full border border-input bg-background px-3 py-3 text-xl font-bold font-mono text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 interface ReceiptFormProps {
   data: FormData;
@@ -96,49 +97,50 @@ interface ReceiptFormProps {
   canRemove: boolean;
 }
 
+interface WeightFieldsProps {
+  data: FormData;
+  onChange: (data: FormData) => void;
+  gajanan?: boolean;
+}
+
+const WeightFields = ({ data, onChange, gajanan = false }: WeightFieldsProps) => {
+  const changeWeight = (type: "grossWeight" | "tareWeight", value: string) => {
+    const next = { ...data, [type]: toDigits(value.replace(/\D/g, "").slice(0, NUM_DIGITS), NUM_DIGITS) };
+    next.netWeight = calcNetWeight(next.grossWeight, next.tareWeight);
+    onChange(next);
+  };
+  const fields = [
+    { key: "grossWeight" as const, label: "Gross Weight" },
+    { key: "tareWeight" as const, label: "Tare Weight" },
+  ];
+  const inputStyle = gajanan ? gajananDigitClass : weightInputClass;
+  const value = (digits: string[]) => digits.join("").replace(/^0+/, "");
+
+  return (
+    <div className="space-y-3 border-y border-border py-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-extrabold uppercase tracking-wide" style={gajanan ? { color: G_NAVY } : undefined}>Weight Details</h3>
+        <span className="text-xs font-semibold text-muted-foreground">All weights in kg</span>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {fields.map(({ key, label }) => (
+          <label key={key} className="block space-y-1.5">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
+            <input aria-label={label} className={inputStyle} type="text" inputMode="numeric" maxLength={NUM_DIGITS} value={value(data[key])} onChange={(e) => changeWeight(key, e.target.value)} />
+          </label>
+        ))}
+        <div className="space-y-1.5">
+          <span className="block text-xs font-bold uppercase tracking-wide text-muted-foreground">Net Weight</span>
+          <div aria-label="Net Weight" className={`flex h-[50px] items-center border border-border px-3 font-mono text-xl font-extrabold ${gajanan ? "" : "border-primary/40 bg-primary/5 text-primary"}`} style={gajanan ? { backgroundColor: G_TABLE_HEAD, color: G_NAVY } : undefined}>
+            {value(data.netWeight) || "—"}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ReceiptForm = ({ data, onChange, index, onRemove, canRemove }: ReceiptFormProps) => {
-  const grossRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const tareRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  const handleDigitChange = useCallback(
-    (type: "grossWeight" | "tareWeight", idx: number, val: string) => {
-      const digit = val.replace(/[^0-9]/g, "").slice(-1);
-      const arr = [...data[type]];
-      arr[idx] = digit;
-      const updated = { ...data, [type]: arr };
-      const gross = type === "grossWeight" ? arr : data.grossWeight;
-      const tare = type === "tareWeight" ? arr : data.tareWeight;
-      updated.netWeight = calcNetWeight(gross, tare);
-      onChange(updated);
-
-      // Auto-advance to next box
-      if (digit !== "") {
-        const refs = type === "grossWeight" ? grossRefs : tareRefs;
-        if (idx < NUM_DIGITS - 1) {
-          refs.current[idx + 1]?.focus();
-        } else if (type === "grossWeight") {
-          // Jump to first tare weight box
-          tareRefs.current[0]?.focus();
-        }
-      }
-    },
-    [data, onChange]
-  );
-
-  const handleKeyDown = useCallback(
-    (type: "grossWeight" | "tareWeight", idx: number, e: React.KeyboardEvent) => {
-      const refs = type === "grossWeight" ? grossRefs : tareRefs;
-      if (e.key === "Backspace" && data[type][idx] === "" && idx > 0) {
-        refs.current[idx - 1]?.focus();
-      } else if (e.key === "ArrowLeft" && idx > 0) {
-        refs.current[idx - 1]?.focus();
-      } else if (e.key === "ArrowRight" && idx < NUM_DIGITS - 1) {
-        refs.current[idx + 1]?.focus();
-      }
-    },
-    [data]
-  );
-
   return (
     <section className="overflow-hidden border border-border bg-card shadow-sm relative">
       {canRemove && (
@@ -206,55 +208,7 @@ const ReceiptForm = ({ data, onChange, index, onRemove, canRemove }: ReceiptForm
           </label>
         </div>
 
-        <div>
-          <div className="mb-2 flex items-center justify-between border-b border-border pb-2">
-            <h3 className="text-sm font-extrabold uppercase tracking-wide text-primary">Weight Details</h3>
-            <span className="text-xs font-semibold text-muted-foreground">Kilograms (kg)</span>
-          </div>
-          <div className="overflow-x-auto border border-border">
-      <table className="w-full min-w-[470px] border-collapse">
-        <thead>
-          <tr className="bg-muted/70 text-left text-xs font-bold uppercase text-muted-foreground">
-            <th className="border-b border-r border-border px-3 py-2">Weight Type</th>
-            {data.grossWeight.map((_, i) => <th key={i} className="border-b border-r border-border px-1 py-2 text-center">{i + 1}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {(["grossWeight", "tareWeight"] as const).map((type) => (
-            <tr key={type}>
-              <td className="border border-primary px-2 py-0.5 text-xs font-semibold text-primary w-28">
-                {type === "grossWeight" ? "Gross Weight" : "Tare Weight"}
-              </td>
-              {data[type].map((val, i) => (
-              <td key={i} className="border-b border-r border-border p-0">
-                  <input
-                    ref={(el) => {
-                      (type === "grossWeight" ? grossRefs : tareRefs).current[i] = el;
-                    }}
-                    className={digitInputClass}
-                    value={val}
-                    maxLength={1}
-                    inputMode="numeric"
-                    onChange={(e) => handleDigitChange(type, i, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(type, i, e)}
-                    onFocus={(e) => e.target.select()}
-                  />
-                </td>
-              ))}
-            </tr>
-          ))}
-          <tr>
-            <td className="border-r border-border bg-primary/5 px-3 py-2 text-xs font-bold text-primary">Net Weight</td>
-            {data.netWeight.map((val, i) => (
-              <td key={i} className="border-r border-border bg-primary/5 p-0">
-                <span className="block text-center text-base px-0.5 font-bold font-mono h-10 leading-10 text-primary">{val}</span>
-              </td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
-          </div>
-        </div>
+        <WeightFields data={data} onChange={onChange} />
 
         <div className="grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2">
           <label className="block space-y-1.5">
