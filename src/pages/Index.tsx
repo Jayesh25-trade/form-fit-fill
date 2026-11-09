@@ -141,48 +141,6 @@ const WeightFields = ({ data, onChange, gajanan = false }: WeightFieldsProps) =>
 };
 
 const ReceiptForm = ({ data, onChange, index, onRemove, canRemove }: ReceiptFormProps) => {
-  const grossRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const tareRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  const handleDigitChange = useCallback(
-    (type: "grossWeight" | "tareWeight", idx: number, val: string) => {
-      const digit = val.replace(/[^0-9]/g, "").slice(-1);
-      const arr = [...data[type]];
-      arr[idx] = digit;
-      const updated = { ...data, [type]: arr };
-      const gross = type === "grossWeight" ? arr : data.grossWeight;
-      const tare = type === "tareWeight" ? arr : data.tareWeight;
-      updated.netWeight = calcNetWeight(gross, tare);
-      onChange(updated);
-
-      // Auto-advance to next box
-      if (digit !== "") {
-        const refs = type === "grossWeight" ? grossRefs : tareRefs;
-        if (idx < NUM_DIGITS - 1) {
-          refs.current[idx + 1]?.focus();
-        } else if (type === "grossWeight") {
-          // Jump to first tare weight box
-          tareRefs.current[0]?.focus();
-        }
-      }
-    },
-    [data, onChange]
-  );
-
-  const handleKeyDown = useCallback(
-    (type: "grossWeight" | "tareWeight", idx: number, e: React.KeyboardEvent) => {
-      const refs = type === "grossWeight" ? grossRefs : tareRefs;
-      if (e.key === "Backspace" && data[type][idx] === "" && idx > 0) {
-        refs.current[idx - 1]?.focus();
-      } else if (e.key === "ArrowLeft" && idx > 0) {
-        refs.current[idx - 1]?.focus();
-      } else if (e.key === "ArrowRight" && idx < NUM_DIGITS - 1) {
-        refs.current[idx + 1]?.focus();
-      }
-    },
-    [data]
-  );
-
   return (
     <section className="overflow-hidden border border-border bg-card shadow-sm relative">
       {canRemove && (
