@@ -252,55 +252,7 @@ const ReceiptForm = ({ data, onChange, index, onRemove, canRemove }: ReceiptForm
           </label>
         </div>
 
-        <div>
-          <div className="mb-2 flex items-center justify-between border-b border-border pb-2">
-            <h3 className="text-sm font-extrabold uppercase tracking-wide text-primary">Weight Details</h3>
-            <span className="text-xs font-semibold text-muted-foreground">Kilograms (kg)</span>
-          </div>
-          <div className="overflow-x-auto border border-border">
-      <table className="w-full min-w-[470px] border-collapse">
-        <thead>
-          <tr className="bg-muted/70 text-left text-xs font-bold uppercase text-muted-foreground">
-            <th className="border-b border-r border-border px-3 py-2">Weight Type</th>
-            {data.grossWeight.map((_, i) => <th key={i} className="border-b border-r border-border px-1 py-2 text-center">{i + 1}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {(["grossWeight", "tareWeight"] as const).map((type) => (
-            <tr key={type}>
-              <td className="border border-primary px-2 py-0.5 text-xs font-semibold text-primary w-28">
-                {type === "grossWeight" ? "Gross Weight" : "Tare Weight"}
-              </td>
-              {data[type].map((val, i) => (
-              <td key={i} className="border-b border-r border-border p-0">
-                  <input
-                    ref={(el) => {
-                      (type === "grossWeight" ? grossRefs : tareRefs).current[i] = el;
-                    }}
-                    className={digitInputClass}
-                    value={val}
-                    maxLength={1}
-                    inputMode="numeric"
-                    onChange={(e) => handleDigitChange(type, i, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(type, i, e)}
-                    onFocus={(e) => e.target.select()}
-                  />
-                </td>
-              ))}
-            </tr>
-          ))}
-          <tr>
-            <td className="border-r border-border bg-primary/5 px-3 py-2 text-xs font-bold text-primary">Net Weight</td>
-            {data.netWeight.map((val, i) => (
-              <td key={i} className="border-r border-border bg-primary/5 p-0">
-                <span className="block text-center text-base px-0.5 font-bold font-mono h-10 leading-10 text-primary">{val}</span>
-              </td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
-          </div>
-        </div>
+        <WeightFields data={data} onChange={onChange} />
 
         <div className="grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2">
           <label className="block space-y-1.5">
