@@ -1,7 +1,7 @@
-import { useState, useRef, useCallback } from "react";
+import { useState } from "react";
 import jsPDF from "jspdf";
 import ScanSlipDialog, { type ScanChoice } from "@/components/ScanSlipDialog";
-import { toDigits, type ParsedSlip } from "@/lib/slipParser";
+import { calcNetWeight, toDigits, type ParsedSlip } from "@/lib/slipParser";
 import { Button } from "@/components/ui/button";
 import { Download, Plus, Scale, Truck } from "lucide-react";
 
@@ -74,8 +74,6 @@ function calcNetWeight(gross: string[], tare: string[]): string[] {
 
 const inputClass =
   "min-w-0 w-full border border-input bg-background px-2.5 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
-const digitInputClass =
-  "w-full h-10 bg-transparent text-center text-base font-bold font-mono focus:outline-none focus:bg-primary/10 border-none";
 const weightInputClass =
   "w-full border border-input bg-background px-3 py-3 text-xl font-bold font-mono text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -89,7 +87,7 @@ const G_TABLE_LABEL = "#e8eff7";
 const gajananBoxClass =
   "w-full bg-[#f7ecd9] border border-[#d8c9a8] rounded-sm px-2 py-1 text-base font-bold text-[#1b3a6b] focus:outline-none focus:ring-1 focus:ring-[#1b3a6b]";
 const gajananDigitClass =
-  "w-full h-9 bg-transparent text-center text-lg font-bold font-mono text-[#1b3a6b] focus:outline-none focus:bg-[#dbe7f3] border-none";
+  "w-full border border-input bg-background px-3 py-3 text-xl font-bold font-mono text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 interface ReceiptFormProps {
   data: FormData;
