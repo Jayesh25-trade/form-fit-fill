@@ -70,7 +70,6 @@ const G_NAVY = "#1b3a6b";
 const G_RED = "#c0392b";
 const G_BEIGE = "#f7ecd9";
 const G_TABLE_HEAD = "#dbe7f3";
-const G_TABLE_LABEL = "#e8eff7";
 
 const gajananBoxClass =
   "w-full bg-[#f7ecd9] border border-[#d8c9a8] rounded-sm px-2 py-1 text-base font-bold text-[#1b3a6b] focus:outline-none focus:ring-1 focus:ring-[#1b3a6b]";
@@ -301,16 +300,17 @@ const GajananReceiptForm = ({ data, onChange, index, onRemove, canRemove }: Rece
   );
 };
 
-// ===================== PDF GENERATION =====================
-
-// S.S. Dharmkata PDF: 2 receipts per A4 page
-function generatePDF(forms: FormData[]) {
+// Computerized weighbridge receipt PDF: 2 clean, table-free receipts per A4 page.
+function generateReceiptPDF(forms: FormData[], format: BillFormat) {
   const doc = new jsPDF("p", "mm", "a4");
   const pageW = 210;
   const margin = 10;
   const contentW = pageW - margin * 2;
   const slipH = 130;
-  const color: [number, number, number] = [180, 30, 70];
+  const isGajanan = format === "gajanan";
+  const navy: [number, number, number] = isGajanan ? [27, 58, 107] : [180, 30, 70];
+  const red: [number, number, number] = isGajanan ? [192, 57, 43] : navy;
+  const dark: [number, number, number] = [34, 34, 34];
 
   forms.forEach((form, idx) => {
     const isSecondOnPage = idx % 2 === 1;
@@ -321,276 +321,24 @@ function generatePDF(forms: FormData[]) {
     const x = margin;
     const y = yStart;
 
-    doc.setDrawColor(...color);
-    doc.setLineWidth(0.5);
-    doc.rect(x, y, contentW, slipH);
-
-    const loc = form.location || "shegaon";
-    const locAddr = LOCATIONS[loc].address;
-    doc.setTextColor(...color);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.text("|| Shree ||", pageW / 2, y + 6, { align: "center" });
-    doc.setFontSize(16);
-    doc.text("S.S. DHARMKATA", pageW / 2, y + 12, { align: "center" });
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${locAddr} Mob : 9970041700`, pageW / 2, y + 17, { align: "center" });
-    doc.line(x + 30, y + 18, x + contentW - 30, y + 18);
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bolditalic");
-    doc.text("24/7 AVAILABLE", pageW / 2, y + 22, { align: "center" });
-
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.text("No.", x + 4, y + 27);
-    doc.text(form.no, x + 14, y + 27);
-    doc.text("Date:", x + contentW - 50, y + 27);
-    doc.text(form.date, x + contentW - 35, y + 27);
-
-    doc.setFontSize(10);
-    doc.text("Time In:", x + 4, y + 34);
-    doc.text(form.timeIn, x + 24, y + 34);
-    doc.text("Time Out:", x + contentW / 2, y + 34);
-    doc.text(form.timeOut, x + contentW / 2 + 22, y + 34);
-
-    doc.text("M/s.", x + 4, y + 41);
-    doc.line(x + 14, y + 42, x + contentW - 4, y + 42);
-    doc.text(form.ms, x + 16, y + 41);
-
-    doc.text("Vehicle No.", x + 4, y + 48);
-    doc.line(x + 26, y + 49, x + contentW - 4, y + 49);
-    doc.text(form.vehicleNo, x + 28, y + 48);
-
-    doc.setFontSize(11);
-    doc.text("KILOGRAMS", pageW / 2, y + 56, { align: "center" });
-
-    const tableY = y + 59;
-    const labelW = 30;
-    const cellW = (contentW - labelW - 8) / NUM_DIGITS;
-    const rowH = 9;
-    const tableX = x + 4;
-
-    const rows = [
-      { label: "Gross Weight", data: form.grossWeight },
-      { label: "Tare Weight", data: form.tareWeight },
-      { label: "Net Weight", data: form.netWeight },
-    ];
-
-    doc.setFontSize(10);
-
-    rows.forEach((row, ri) => {
-      const ry = tableY + ri * rowH;
-      doc.rect(tableX, ry, labelW, rowH);
-      doc.setFont("helvetica", "bold");
-      doc.text(row.label, tableX + 2, ry + 6.5);
-      row.data.forEach((val, ci) => {
-        const cx = tableX + labelW + ci * cellW;
-        doc.rect(cx, ry, cellW, rowH);
-        doc.text(val, cx + cellW / 2, ry + 6.5, { align: "center" });
-      });
-    });
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    const disclaimerY = tableY + rowH * 3 + 5;
-    doc.text("Please Check Weight No Responsibility Accepted Once", pageW / 2, disclaimerY, { align: "center" });
-    doc.text("Carrier Leave the Weight Bridge", pageW / 2, disclaimerY + 4, { align: "center" });
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    const bottomY = disclaimerY + 10;
-    doc.text("Received Rs.", x + 4, bottomY);
-    doc.text(form.receivedRs, x + 30, bottomY);
-    doc.text("For,", x + contentW - 20, bottomY);
-
-    doc.text("Rs.", x + 4, bottomY + 7);
-    doc.text(form.rs, x + 12, bottomY + 7);
-    doc.line(x + contentW - 35, bottomY + 8, x + contentW - 4, bottomY + 8);
-    doc.text("Signature", x + contentW - 28, bottomY + 12);
-  });
-
-  doc.save("SS_Dharmkata_Receipts.pdf");
-}
-
-// Gajanan Weighbridge PDF: 2 receipts per A4 page
-function generateGajananPDF(forms: FormData[]) {
-  const doc = new jsPDF("p", "mm", "a4");
-  const pageW = 210;
-  const margin = 10;
-  const contentW = pageW - margin * 2;
-  const slipH = 134;
-  const navy: [number, number, number] = [27, 58, 107];
-  const red: [number, number, number] = [192, 57, 43];
-  const beige: [number, number, number] = [247, 236, 217];
-  const tableHead: [number, number, number] = [219, 231, 243];
-  const tableLabel: [number, number, number] = [232, 239, 247];
-  const dark: [number, number, number] = [34, 34, 34];
-
-  forms.forEach((form, idx) => {
-    const isSecondOnPage = idx % 2 === 1;
-    const yStart = isSecondOnPage ? margin + slipH + 4 : margin;
-
-    if (idx > 0 && !isSecondOnPage) doc.addPage();
-
-    const x = margin;
-    const y = yStart;
-
-    // Outer double border
+    // Distinctive receipt frame and clear computerized header.
     doc.setDrawColor(...navy);
-    doc.setLineWidth(0.9);
+    doc.setLineWidth(0.65);
     doc.rect(x, y, contentW, slipH);
-    doc.setLineWidth(0.3);
-    doc.rect(x + 1.5, y + 1.5, contentW - 3, slipH - 3);
+    doc.setFillColor(...navy);
+    doc.rect(x, y, contentW, 25, "F");
 
-    // Header
-    doc.setTextColor(...red);
-    doc.setFont("times", "bold");
-    doc.setFontSize(12);
-    doc.text("|| Shree ||", pageW / 2, y + 6.5, { align: "center" });
-
-    doc.setTextColor(...navy);
-    doc.setFont("times", "bold");
-    doc.setFontSize(26);
-    doc.text("GAJANAN WEIGHBRIDGE", pageW / 2, y + 14.5, { align: "center" });
-
-    doc.setTextColor(...dark);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.text(`${GAJANAN_ADDRESS}  |  Mob : ${GAJANAN_MOB}`, pageW / 2, y + 20, { align: "center" });
-
-    // 24/7 AVAILABLE pill with side lines
-    const pillY = y + 23;
-    doc.setDrawColor(...red);
-    doc.setLineWidth(0.6);
-    doc.line(x + 4, pillY + 2, pageW / 2 - 26, pillY + 2);
-    doc.line(pageW / 2 + 26, pillY + 2, x + contentW - 4, pillY + 2);
-    doc.setFillColor(...red);
-    doc.roundedRect(pageW / 2 - 24, pillY - 1.5, 48, 7, 1.5, 1.5, "F");
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("24/7 AVAILABLE", pageW / 2, pillY + 3.5, { align: "center" });
-
-    // Helper: beige input box with value
-    const beigeBox = (bx: number, by: number, bw: number, bh: number, value: string, fontSize = 11) => {
-      doc.setFillColor(...beige);
-      doc.setDrawColor(216, 201, 168);
-      doc.setLineWidth(0.3);
-      doc.roundedRect(bx, by, bw, bh, 0.8, 0.8, "FD");
-      doc.setTextColor(...navy);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(fontSize);
-      doc.text(value, bx + 2, by + bh - 2.2);
-    };
-
-    // No. and Date
-    const rowY = y + 29;
-    doc.setTextColor(...dark);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("No.", x + 4, rowY + 4.5);
-    beigeBox(x + 14, rowY, 30, 7, form.no);
-    doc.text("Date :", x + contentW - 62, rowY + 4.5);
-    beigeBox(x + contentW - 44, rowY, 40, 7, form.date);
-
-    // Time In / Time Out
-    const timeY = rowY + 9;
-    doc.setTextColor(...dark);
-    doc.text("Time In :", x + 4, timeY + 4.5);
-    beigeBox(x + 24, timeY, 40, 7, form.timeIn);
-    doc.text("Time Out :", x + contentW / 2 + 4, timeY + 4.5);
-    beigeBox(x + contentW / 2 + 28, timeY, 40, 7, form.timeOut);
-
-    // M/s.
-    const msY = timeY + 9;
-    doc.text("M/s.", x + 4, msY + 4.5);
-    beigeBox(x + 16, msY, contentW - 20, 7, form.ms);
-
-    // Vehicle No.
-    const vehY = msY + 9;
-    doc.text("Vehicle No.", x + 4, vehY + 4.5);
-    beigeBox(x + 30, vehY, contentW - 34, 7, form.vehicleNo);
-
-    // Kilograms table
-    const tableY = vehY + 10;
-    const labelW = 34;
-    const tableX = x + 4;
-    const tableW = contentW - 8;
-    const cellW = (tableW - labelW) / NUM_DIGITS;
-    const headH = 8;
-    const rowH = 8.5;
-
-    // Header row
-    doc.setFillColor(...tableHead);
-    doc.setDrawColor(...navy);
-    doc.setLineWidth(0.4);
-    doc.rect(tableX, tableY, tableW, headH, "FD");
-    doc.setTextColor(...dark);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("KILOGRAMS", pageW / 2, tableY + 6, { align: "center" });
-
-    const rows = [
-      { label: "Gross Weight", data: form.grossWeight },
-      { label: "Tare Weight", data: form.tareWeight },
-      { label: "Net Weight", data: form.netWeight },
-    ];
-
-    rows.forEach((row, ri) => {
-      const ry = tableY + headH + ri * rowH;
-      // Label cell
-      doc.setFillColor(...tableLabel);
-      doc.setDrawColor(...navy);
-      doc.rect(tableX, ry, labelW, rowH, "FD");
-      doc.setTextColor(...dark);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.text(row.label, tableX + 2, ry + 6.5);
-      // Digit cells
-      row.data.forEach((val, ci) => {
-        const cx = tableX + labelW + ci * cellW;
-        doc.setFillColor(255, 255, 255);
-        doc.rect(cx, ry, cellW, rowH, "FD");
-        doc.setTextColor(...navy);
-        doc.setFontSize(12);
-        doc.text(val, cx + cellW / 2, ry + 6.5, { align: "center" });
-      });
-    });
-
-    // Disclaimer
-    const disclaimerY = tableY + headH + rowH * 3 + 5;
-    doc.setTextColor(...red);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("times", "bold");
     doc.setFontSize(9);
-    doc.text("Please Check Weight No Responsibility Accepted Once", pageW / 2, disclaimerY, { align: "center" });
-    doc.text("Carrier Leave the Weight Bridge", pageW / 2, disclaimerY + 4.5, { align: "center" });
-
-    // Red divider line
-    doc.setDrawColor(...red);
-    doc.setLineWidth(0.6);
-    doc.line(x + 4, disclaimerY + 8, x + contentW - 4, disclaimerY + 8);
-
-    // Bottom row
-    const bottomY = disclaimerY + 10;
-    doc.setTextColor(...dark);
-    doc.setFontSize(11);
-    doc.text("Received Rs.", x + 4, bottomY + 4.5);
-    beigeBox(x + 30, bottomY, 40, 7, form.receivedRs);
-    doc.text("For,", x + contentW - 30, bottomY + 4.5);
-
-    const rsY = bottomY + 9;
-    doc.text("Rs.", x + 4, rsY + 4.5);
-    beigeBox(x + 14, rsY, 56, 7, form.rs);
-
-    // Signature dotted line
-    doc.setDrawColor(...dark);
-    doc.setLineWidth(0.4);
-    doc.setLineDashPattern([0.8, 1.2], 0);
-    doc.line(x + contentW - 42, rsY + 4, x + contentW - 4, rsY + 4);
-    doc.setLineDashPattern([], 0);
-    doc.setFontSize(10);
-    doc.text("Signature", x + contentW - 23, rsY + 8.5, { align: "center" });
+    doc.text("|| Shree ||", pageW / 2, y + 6, { align: "center" });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(isGajanan ? 18 : 16);
+    doc.text(isGajanan ? "GAJANAN WEIGHBRIDGE" : "S.S. DHARMKATA", pageW / 2, y + 14, { align: "center" });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    const address = isGajanan ? `${GAJANAN_ADDRESS} | Mob: ${GAJANAN_MOB}` : `${LOCATIONS[form.location || "shegaon"].address} | Mob: 9970041700`;
+    doc.text(address, pageW / 2, y + 20, { align: "center
   });
 
   doc.save("Gajanan_Weighbridge_Receipts.pdf");
