@@ -95,3 +95,16 @@ export function toDigits(n: string, count = 5): string[] {
   while (arr.length < count) arr.unshift("");
   return arr;
 }
+
+export function calculateNetWeight(gross: string[], tare: string[]): string[] {
+  const grossValue = Number.parseInt(gross.join("") || "0", 10);
+  const tareValue = Number.parseInt(tare.join("") || "0", 10);
+  if (gross.every((digit) => digit === "") && tare.every((digit) => digit === "")) {
+    return Array(Math.max(gross.length, tare.length)).fill("");
+  }
+  return Math.abs(grossValue - tareValue)
+    .toString()
+    .padStart(Math.max(gross.length, tare.length), "0")
+    .slice(-Math.max(gross.length, tare.length))
+    .split("");
+}
