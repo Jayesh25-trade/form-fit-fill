@@ -1,7 +1,7 @@
 import { useState } from "react";
 import jsPDF from "jspdf";
 import ScanSlipDialog, { type ScanChoice } from "@/components/ScanSlipDialog";
-import { calcNetWeight, toDigits, type ParsedSlip } from "@/lib/slipParser";
+import { calculateNetWeight, toDigits, type ParsedSlip } from "@/lib/slipParser";
 import { Button } from "@/components/ui/button";
 import { Download, Plus, Scale, Truck } from "lucide-react";
 
@@ -60,18 +60,6 @@ const emptyForm = (format: BillFormat = "ss"): FormData => ({
   rs: "",
 });
 
-function calcNetWeight(gross: string[], tare: string[]): string[] {
-  const grossNum = parseInt(gross.join("") || "0", 10);
-  const tareNum = parseInt(tare.join("") || "0", 10);
-  const net = grossNum - tareNum;
-  if (gross.every((d) => d === "") && tare.every((d) => d === "")) {
-    return Array(NUM_DIGITS).fill("");
-  }
-  const netStr = Math.abs(net).toString().padStart(NUM_DIGITS, "0");
-  const digits = netStr.slice(-NUM_DIGITS).split("");
-  return digits;
-}
-
 const inputClass =
   "min-w-0 w-full border border-input bg-background px-2.5 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const weightInputClass =
@@ -106,7 +94,7 @@ interface WeightFieldsProps {
 const WeightFields = ({ data, onChange, gajanan = false }: WeightFieldsProps) => {
   const changeWeight = (type: "grossWeight" | "tareWeight", value: string) => {
     const next = { ...data, [type]: toDigits(value.replace(/\D/g, "").slice(0, NUM_DIGITS), NUM_DIGITS) };
-    next.netWeight = calcNetWeight(next.grossWeight, next.tareWeight);
+    next.netWeight = calculateNetWeight(next.grossWeight, next.tareWeight);
     onChange(next);
   };
   const fields = [
