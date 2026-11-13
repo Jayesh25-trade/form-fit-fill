@@ -218,96 +218,98 @@ function ReceiptFooter({ data, onChange, businessName }: { data: FormData; onCha
   );
 }
 
+const DIGIT_WORDS = ["ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE"];
+const formatDate = (iso: string) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso || "";
+};
+
 function generateReceiptPDF(forms: FormData[], format: BillFormat) {
   const doc = new jsPDF("p", "mm", "a4");
   const pageW = 210;
   const margin = 10;
   const contentW = pageW - margin * 2;
-  const slipH = 130;
+  const slipH = 132;
   const gajanan = format === "gajanan";
-  const navy: [number, number, number] = gajanan ? [27, 58, 107] : [180, 30, 70];
-  const red: [number, number, number] = gajanan ? [192, 57, 43] : navy;
-  const dark: [number, number, number] = [34, 34, 34];
-  const text = (value: string, x: number, y: number, size = 10, color = dark, bold = true) => {
+  const brand: [number, number, number] = gajanan ? [27, 58, 107] : [180, 30, 70];
+  const red: [number, number, number] = gajanan ? [192, 57, 43] : brand;
+  const dark: [number, number, number] = [25, 25, 25];
+  const grey: [number, number, number] = [90, 90, 90];
+  const put = (value: string, x: number, y: number, size: number, color = dark, bold = true, align: "left" | "center" | "right" = "left", font = "courier") => {
     doc.setTextColor(...color);
-    doc.setFont("helvetica", bold ? "bold" : "normal");
+    doc.setFont(font, bold ? "bold" : "normal");
     doc.setFontSize(size);
-    doc.text(value || "—", x, y);
+    doc.text(value, x, y, { align });
   };
-  const valueLine = (label: string, value: string, x: number, y: number, width: number, valueSize = 11) => {
-    text(label, x, y, 8, [95, 95, 95]);
-    text(value || "—", x, y + 6, valueSize, dark);
-    doc.setDrawColor(205, 210, 215);
-    doc.setLineWidth(0.25);
-    doc.line(x, y + 8, x + width, y + 8);
+  const dotted = (y: number, x1: number, x2: number) => {
+    doc.setDrawColor(110, 110, 110);
+    doc.setLineWidth(0.3);
+    doc.setLineDashPattern([0.6, 0.9], 0);
+    doc.line(x1, y, x2, y);
+    doc.setLineDashPattern([], 0);
+  };
+  const pair = (label: string, value: string, x: number, y: number, labelW: number, valueSize = 11) => {
+    put(label, x, y, 10, grey, true);
+    put(":", x + labelW, y, 10, grey, true);
+    put(value, x + labelW + 4, y, valueSize, dark, true);
   };
 
   forms.forEach((form, idx) => {
     const second = idx % 2 === 1;
     if (idx > 0 && !second) doc.addPage();
     const x = margin;
-    const y = second ? margin + slipH + 8 : margin;
-    doc.setDrawColor(...navy);
-    doc.setLineWidth(0.6);
-    doc.rect(x, y, contentW, slipH);
-    doc.setFillColor(...navy);
-    doc.rect(x, y, contentW, 24, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("times", "bold");
-    doc.setFontSize(9);
-    doc.text("|| Shree ||", pageW / 2, y + 5.5, { align: "center" });
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(gajanan ? 18 : 16);
-    doc.text(gajanan ? "GAJANAN WEIGHBRIDGE" : "S.S. DHARMKATA", pageW / 2, y + 13.5, { align: "center" });
-    doc.setFontSize(8);
-    const address = gajanan ? `${GAJANAN_ADDRESS} | Mob: ${GAJANAN_MOB}` : `${LOCATIONS[form.location || "shegaon"].address} | Mob: 9970041700`;
-    doc.text(address, pageW / 2, y + 20, { align: "center" });
-    doc.setTextColor(...red);
-    doc.setFontSize(8);
-    doc.text("24/7 AVAILABLE", pageW / 2, y + 30, { align: "center" });
+    const y = second ? margin + slipH + 12 : margin;
+    const L = x + 6;
+    const R = x + contentW / 2 + 6;
+    const right = x + contentW - 6;
+    const cx = pageW / 2;
 
-    valueLine("RECEIPT NO.", form.no, x + 5, y + 43, 72, 11);
-    valueLine("DATE", form.date, x + 84, y + 43, 48, 10);
-    valueLine("VEHICLE NO.", form.vehicleNo, x + 139, y + 43, 46, 11);
-    valueLine("TIME IN", form.timeIn, x + 5, y + 58, 55, 10);
-    valueLine("TIME OUT", form.timeOut, x + 68, y + 58, 55, 10);
-    valueLine("M/s. / PARTY NAME", form.ms, x + 131, y + 58, 54, 10);
+    // Header
+    put("|| Shree ||", cx, y + 6, 9, red, true, "center", "times");
+    put(gajanan ? "GAJANAN WEIGHBRIDGE" : "S.S. DHARMKATA", cx, y + 14, 20, brand, true, "center", "helvetica");
+    const address = gajanan ? GAJANAN_ADDRESS : LOCATIONS[form.location || "shegaon"].address;
+    put(address, cx, y + 20, 9, dark, true, "center");
+    put(`MOB. NO. ${gajanan ? GAJANAN_MOB : "9970041700"}  |  24/7 AVAILABLE`, cx, y + 25, 9, red, true, "center");
+    dotted(y + 29, L, right);
 
-    doc.setDrawColor(220, 224, 228);
-    doc.setLineWidth(0.25);
-    doc.line(x + 5, y + 76, x + contentW - 5, y + 76);
-    const weightX = [x + 5, x + 71, x + 137];
-    const weightLabels = ["GROSS WEIGHT", "TARE WEIGHT", "NET WEIGHT"];
-    const weightValues = [getWeightValue(form.grossWeight), getWeightValue(form.tareWeight), getWeightValue(form.netWeight)];
-    weightLabels.forEach((label, i) => {
-      text(label, weightX[i], y + 84, 8, [95, 95, 95]);
-      const v = weightValues[i] || "—";
-      text(v, weightX[i], y + 96, 19, i === 2 ? navy : dark);
-      if (weightValues[i]) {
-        doc.setFontSize(19);
-        const w = doc.getTextWidth(v);
-        text("kg", weightX[i] + w + 1.5, y + 96, 10, [95, 95, 95]);
-      }
+    // Meta
+    pair("RST NO", form.no, L, y + 37, 24, 15);
+    pair("VEHICLE NO", form.vehicleNo, R, y + 37, 26, 14);
+    pair("CUSTOMER", form.ms, L, y + 45, 24, 11);
+    pair("DATE", formatDate(form.date), R, y + 45, 26, 11);
+    dotted(y + 50, L, right);
+
+    // Weights
+    const gross = getWeightValue(form.grossWeight);
+    const tare = getWeightValue(form.tareWeight);
+    const net = getWeightValue(form.netWeight);
+    const rows: [string, string, string][] = [
+      ["GROSS Wt", gross, form.timeIn],
+      ["TARE  Wt", tare, form.timeOut],
+      ["NET   Wt", net, ""],
+    ];
+    const date = formatDate(form.date);
+    rows.forEach(([label, value, time], i) => {
+      const ry = y + 60 + i * 10;
+      put(`${label}:`, L, ry, 10, grey, true);
+      put(value || "", L + 50, ry, 18, i === 2 ? brand : dark, true, "right");
+      put("kg", L + 52, ry, 10, grey, true);
+      if (i < 2) put(`Date: ${date}   Time: ${time}`, R, ry, 10, dark, true);
     });
-    doc.setDrawColor(...navy);
-    doc.setLineWidth(0.45);
-    doc.line(x + 5, y + 103, x + contentW - 5, y + 103);
+    if (net) put(`${net.split("").map((d) => DIGIT_WORDS[+d]).join(" ")} kg`, R, y + 80, 10, dark, true);
+    dotted(y + 86, L, right);
 
-    valueLine("RECEIVED RS.", form.receivedRs, x + 5, y + 108, 58, 10);
-    valueLine("RS.", form.rs, x + 72, y + 108, 58, 10);
-    doc.setTextColor(...dark);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.text("For " + (gajanan ? "Gajanan Weighbridge" : "S.S. Dharmkata"), x + contentW - 5, y + 111, { align: "right" });
-    doc.setDrawColor(120, 120, 120);
-    doc.setLineDashPattern([0.8, 1.2], 0);
-    doc.line(x + contentW - 43, y + 120, x + contentW - 5, y + 120);
-    doc.setLineDashPattern([], 0);
-    doc.setFontSize(7);
-    doc.text("Authorized Signature", x + contentW - 24, y + 124, { align: "center" });
-    doc.setTextColor(...red);
-    doc.setFontSize(6.5);
-    doc.text("Please check weight. No responsibility accepted once carrier leaves the weighbridge.", x + 5, y + 125);
+    // Charges
+    pair("Charges(1)", `Rs. ${form.rs || ""}`, L, y + 95, 24, 11);
+    pair("Charges(total)", `Rs. ${form.receivedRs || form.rs || ""}`, R, y + 95, 32, 11);
+    dotted(y + 100, L, right);
+
+    // Footer
+    put("OPERATOR'S SIGNATURE :", L, y + 113, 10, grey, true);
+    dotted(y + 113, L + 50, L + 95);
+    put("VISIT AGAIN", right, y + 113, 10, dark, true, "right");
+    dotted(y + 118, L, right);
+    put("Please check weight. No responsibility accepted once carrier leaves the weighbridge.", cx, y + 124, 7.5, red, true, "center", "helvetica");
   });
   doc.save(gajanan ? "Gajanan_Weighbridge_Receipts.pdf" : "SS_Dharmkata_Receipts.pdf");
 }
