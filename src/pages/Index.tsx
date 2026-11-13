@@ -150,13 +150,11 @@ function ReceiptForm({ data, onChange, index, onRemove, canRemove }: ReceiptForm
       <div className="bg-primary px-5 py-4 text-primary-foreground">
         <div className="flex flex-wrap items-start justify-between gap-3 pr-32 sm:pr-40">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide opacity-80">Computerized weighment receipt</p>
             <h2 className="mt-1 text-2xl font-extrabold leading-tight">S.S. DHARMKATA</h2>
             <p className="mt-1 text-sm font-medium">{location.address} · Mob: 9970041700</p>
           </div>
           <div className="text-right">
             <p className="text-sm font-bold">24/7 AVAILABLE</p>
-            <p className="mt-1 text-xs opacity-80">Receipt {String(index + 1).padStart(2, "0")}</p>
           </div>
         </div>
       </div>
@@ -185,7 +183,6 @@ function GajananReceiptForm({ data, onChange, index, onRemove, canRemove }: Rece
           <h2 className="mt-1 text-2xl font-extrabold leading-tight sm:text-3xl" style={{ color: G_NAVY, fontFamily: "Georgia, 'Times New Roman', serif" }}>GAJANAN WEIGHBRIDGE</h2>
           <p className="mt-1 text-sm font-semibold text-foreground">{GAJANAN_ADDRESS} · Mob: {GAJANAN_MOB}</p>
           <span className="mt-2 inline-block px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-primary-foreground" style={{ backgroundColor: G_RED }}>24/7 Available</span>
-          <p className="mt-2 text-xs font-medium text-muted-foreground">Computerized weighment receipt · {String(index + 1).padStart(2, "0")}</p>
         </header>
         <div className="space-y-5">
           <ReceiptFields data={data} onChange={onChange} />
@@ -268,7 +265,6 @@ function generateReceiptPDF(forms: FormData[], format: BillFormat) {
     doc.setTextColor(...red);
     doc.setFontSize(8);
     doc.text("24/7 AVAILABLE", pageW / 2, y + 30, { align: "center" });
-    text(`COMPUTERIZED WEIGHMENT RECEIPT   ·   ${String(idx + 1).padStart(2, "0")}`, x + 5, y + 36, 7, [100, 100, 100]);
 
     valueLine("RECEIPT NO.", form.no, x + 5, y + 43, 72, 11);
     valueLine("DATE", form.date, x + 84, y + 43, 48, 10);
@@ -285,8 +281,13 @@ function generateReceiptPDF(forms: FormData[], format: BillFormat) {
     const weightValues = [getWeightValue(form.grossWeight), getWeightValue(form.tareWeight), getWeightValue(form.netWeight)];
     weightLabels.forEach((label, i) => {
       text(label, weightX[i], y + 84, 8, [95, 95, 95]);
-      text(weightValues[i] || "—", weightX[i], y + 96, 19, i === 2 ? navy : dark);
-      text("kg", weightX[i] + 49, y + 96, 9, [95, 95, 95]);
+      const v = weightValues[i] || "—";
+      text(v, weightX[i], y + 96, 19, i === 2 ? navy : dark);
+      if (weightValues[i]) {
+        doc.setFontSize(19);
+        const w = doc.getTextWidth(v);
+        text("kg", weightX[i] + w + 1.5, y + 96, 10, [95, 95, 95]);
+      }
     });
     doc.setDrawColor(...navy);
     doc.setLineWidth(0.45);
