@@ -268,10 +268,10 @@ function generateReceiptPDF(forms: FormData[], format: BillFormat) {
 
     valueLine("RECEIPT NO.", form.no, x + 5, y + 43, 72, 11);
     valueLine("DATE", form.date, x + 84, y + 43, 48, 10);
-    valueLine("VEHICLE NO.", form.vehicleNo, x + 139, y + 43, 56, 11);
+    valueLine("VEHICLE NO.", form.vehicleNo, x + 139, y + 43, 46, 11);
     valueLine("TIME IN", form.timeIn, x + 5, y + 58, 55, 10);
     valueLine("TIME OUT", form.timeOut, x + 68, y + 58, 55, 10);
-    valueLine("M/s. / PARTY NAME", form.ms, x + 131, y + 58, 64, 10);
+    valueLine("M/s. / PARTY NAME", form.ms, x + 131, y + 58, 54, 10);
 
     doc.setDrawColor(220, 224, 228);
     doc.setLineWidth(0.25);
