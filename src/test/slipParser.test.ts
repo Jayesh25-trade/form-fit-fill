@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseSlipText, toDigits } from "@/lib/slipParser";
+import { calculateNetWeight, parseSlipText, toDigits } from "@/lib/slipParser";
 
 const divine = `DIVINE COAL CORPORATION
 PLOT NO.87/4 MAUJE VAVE NEAR J.S.W.PARKING WADKHAL POST-PEN (RAIGAD) PIN-402107
@@ -45,5 +45,8 @@ describe("parseSlipText", () => {
   });
   it("pads digits to 5 boxes", () => {
     expect(toDigits("9585")).toEqual(["", "9", "5", "8", "5"]);
+  });
+  it("calculates net weight from full gross and tare values", () => {
+    expect(calculateNetWeight(toDigits("33960"), toDigits("11790")).join("")).toBe("22170");
   });
 });

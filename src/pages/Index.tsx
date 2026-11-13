@@ -115,7 +115,7 @@ function WeightFields({ data, onChange, gajanan }: WeightFieldsProps) {
   );
 }
 
-function ReceiptFields({ data, onChange, gajanan }: { data: FormData; onChange: (data: FormData) => void; gajanan: boolean }) {
+function ReceiptFields({ data, onChange }: { data: FormData; onChange: (data: FormData) => void }) {
   const fields = [
     { label: "Receipt No.", name: "no" as const, type: "text" },
     { label: "Date", name: "date" as const, type: "date" },
@@ -138,7 +138,6 @@ function ReceiptFields({ data, onChange, gajanan }: { data: FormData; onChange: 
         <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Vehicle No.</span>
         <input aria-label="Vehicle No." className={`${fieldClass} uppercase`} value={data.vehicleNo} onChange={(event) => onChange({ ...data, vehicleNo: event.target.value.toUpperCase() })} />
       </label>
-      {gajanan ? <div className="sm:col-span-2" /> : null}
     </div>
   );
 }
@@ -168,7 +167,7 @@ function ReceiptForm({ data, onChange, index, onRemove, canRemove }: ReceiptForm
         </select>
       </div>
       <div className="space-y-5 p-5 sm:p-6">
-        <ReceiptFields data={data} onChange={onChange} gajanan={false} />
+        <ReceiptFields data={data} onChange={onChange} />
         <WeightFields data={data} onChange={onChange} gajanan={false} />
         <ReceiptFooter data={data} onChange={onChange} businessName="S.S. Dharmkata" />
       </div>
@@ -189,7 +188,7 @@ function GajananReceiptForm({ data, onChange, index, onRemove, canRemove }: Rece
           <p className="mt-2 text-xs font-medium text-muted-foreground">Computerized weighment receipt · {String(index + 1).padStart(2, "0")}</p>
         </header>
         <div className="space-y-5">
-          <ReceiptFields data={data} onChange={onChange} gajanan />
+          <ReceiptFields data={data} onChange={onChange} />
           <WeightFields data={data} onChange={onChange} gajanan />
           <ReceiptFooter data={data} onChange={onChange} businessName="Gajanan Weighbridge" />
         </div>
