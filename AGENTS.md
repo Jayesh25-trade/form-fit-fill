@@ -1,0 +1,1 @@
+Keep weighbridge weight entry as full numeric fields and render receipt weights without table grids, so the computerized form and PDFs stay consistent and easy to read.
