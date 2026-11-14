@@ -281,16 +281,17 @@ function generateReceiptPDF(forms: FormData[], format: BillFormat) {
       put("S.S. DHARMKATA", cx, y + 14, 20, brand, true, "center", "helvetica");
     }
     const address = gajanan ? GAJANAN_ADDRESS : LOCATIONS[form.location || "shegaon"].address;
-    put(address, cx, y + 20, 9, dark, true, "center");
-    put(`MOB. NO. ${gajanan ? GAJANAN_MOB : "9970041700"}  |  24/7 AVAILABLE`, cx, y + 25, 9, red, true, "center");
-    dotted(y + 29, L, right);
+    put(address, cx, y + (gajanan ? 24 : 20), 9, dark, true, "center");
+    put(`MOB. NO. ${gajanan ? GAJANAN_MOB : "9970041700"}  |  24/7 AVAILABLE`, cx, y + (gajanan ? 29 : 25), 9, red, true, "center");
+    const sectionOffset = gajanan ? 4 : 0;
+    dotted(y + 29 + sectionOffset, L, right);
 
     // Meta
-    pair("RST NO", form.no, L, y + 37, 24, 15);
-    pair("VEHICLE NO", form.vehicleNo, R, y + 37, 26, 14);
-    pair("CUSTOMER", form.ms, L, y + 45, 24, 11);
-    pair("DATE", formatDate(form.date), R, y + 45, 26, 11);
-    dotted(y + 50, L, right);
+    pair("RST NO", form.no, L, y + 37 + sectionOffset, 24, 15);
+    pair("VEHICLE NO", form.vehicleNo, R, y + 37 + sectionOffset, 26, 14);
+    pair("CUSTOMER", form.ms, L, y + 45 + sectionOffset, 24, 11);
+    pair("DATE", formatDate(form.date), R, y + 45 + sectionOffset, 26, 11);
+    dotted(y + 50 + sectionOffset, L, right);
 
     // Weights
     const gross = getWeightValue(form.grossWeight);
@@ -303,26 +304,26 @@ function generateReceiptPDF(forms: FormData[], format: BillFormat) {
     ];
     const date = formatDate(form.date);
     rows.forEach(([label, value, time], i) => {
-      const ry = y + 60 + i * 10;
+      const ry = y + 60 + sectionOffset + i * 10;
       put(`${label}:`, L, ry, 10, grey, true);
       put(value || "", L + 50, ry, 18, i === 2 ? brand : dark, true, "right");
       put("kg", L + 52, ry, 10, grey, true);
       if (i < 2) put(`Date: ${date}   Time: ${time}`, R, ry, 10, dark, true);
     });
-    if (net) put(`${net.split("").map((d) => DIGIT_WORDS[+d]).join(" ")} kg`, R, y + 80, 10, dark, true);
-    dotted(y + 86, L, right);
+    if (net) put(`${net.split("").map((d) => DIGIT_WORDS[+d]).join(" ")} kg`, R, y + 80 + sectionOffset, 10, dark, true);
+    dotted(y + 86 + sectionOffset, L, right);
 
     // Charges
-    pair("Charges(1)", `Rs. ${form.rs || ""}`, L, y + 95, 24, 11);
-    pair("Charges(total)", `Rs. ${form.receivedRs || form.rs || ""}`, R, y + 95, 32, 11);
-    dotted(y + 100, L, right);
+    pair("Charges(1)", `Rs. ${form.rs || ""}`, L, y + 95 + sectionOffset, 24, 11);
+    pair("Charges(total)", `Rs. ${form.receivedRs || form.rs || ""}`, R, y + 95 + sectionOffset, 32, 11);
+    dotted(y + 100 + sectionOffset, L, right);
 
     // Footer
-    put("OPERATOR'S SIGNATURE :", L, y + 113, 10, grey, true);
-    dotted(y + 113, L + 50, L + 95);
-    put("VISIT AGAIN", right, y + 113, 10, dark, true, "right");
-    dotted(y + 118, L, right);
-    put("Please check weight. No responsibility accepted once carrier leaves the weighbridge.", cx, y + 124, 7.5, red, true, "center", "helvetica");
+    put("OPERATOR'S SIGNATURE :", L, y + 113 + sectionOffset, 10, grey, true);
+    dotted(y + 113 + sectionOffset, L + 50, L + 95);
+    put("VISIT AGAIN", right, y + 113 + sectionOffset, 10, dark, true, "right");
+    dotted(y + 118 + sectionOffset, L, right);
+    put("Please check weight. No responsibility accepted once carrier leaves the weighbridge.", cx, y + 124 + sectionOffset, 7.5, red, true, "center", "helvetica");
   });
   doc.save(gajanan ? "Gajanan_Weighbridge_Receipts.pdf" : "SS_Dharmkata_Receipts.pdf");
 }
