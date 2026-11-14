@@ -44,6 +44,57 @@
   }
 }
 
+.gajanan-receipt {
+  --gajanan-navy: 213 59% 26%;
+  --gajanan-red: 6 63% 49%;
+  --gajanan-blue-tint: 210 40% 95%;
+  --gajanan-paper: 45 50% 96%;
+  border-color: hsl(var(--gajanan-navy) / 0.3);
+  background: hsl(var(--gajanan-blue-tint));
+}
+
+.gajanan-brand-header {
+  border-left: 5px solid hsl(var(--gajanan-red));
+  background: hsl(var(--gajanan-navy));
+  color: hsl(0 0% 100%);
+}
+
+.gajanan-brand-title {
+  border-block: 2px solid hsl(var(--gajanan-red));
+  color: hsl(0 0% 100%);
+}
+
+.gajanan-field {
+  border-color: hsl(var(--gajanan-navy) / 0.32);
+  background: hsl(var(--gajanan-paper));
+  color: hsl(var(--gajanan-navy));
+}
+
+.gajanan-label {
+  color: hsl(var(--gajanan-navy));
+}
+
+.gajanan-weight-section {
+  border: 1px solid hsl(var(--gajanan-navy) / 0.24);
+  background: hsl(var(--gajanan-paper));
+  padding: 1rem;
+}
+
+.gajanan-net-weight {
+  border-color: hsl(var(--gajanan-navy) / 0.3);
+  background: hsl(var(--gajanan-blue-tint));
+  color: hsl(var(--gajanan-navy));
+}
+
+.gajanan-divider {
+  border-color: hsl(var(--gajanan-navy) / 0.25);
+}
+
+.gajanan-badge {
+  background: hsl(var(--gajanan-red));
+  color: hsl(0 0% 100%);
+}
+
 @media print {
   body {
     background: white !important;

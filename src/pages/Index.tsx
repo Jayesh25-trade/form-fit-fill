@@ -84,9 +84,9 @@ function WeightFields({ data, onChange, gajanan }: WeightFieldsProps) {
   ];
 
   return (
-    <section className="space-y-3 border-y border-border py-4">
+    <section className={gajanan ? "gajanan-weight-section space-y-3" : "space-y-3 border-y border-border py-4"}>
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-extrabold uppercase tracking-wide" style={gajanan ? { color: G_NAVY } : undefined}>Weight details</h3>
+        <h3 className={`text-sm font-extrabold uppercase tracking-wide ${gajanan ? "gajanan-label" : ""}`}>Weight details</h3>
         <span className="text-xs font-medium text-muted-foreground">All weights in kg</span>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -95,7 +95,7 @@ function WeightFields({ data, onChange, gajanan }: WeightFieldsProps) {
             <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
             <input
               aria-label={label}
-              className={weightClass}
+              className={`${weightClass} ${gajanan ? "gajanan-field" : ""}`}
               type="text"
               inputMode="numeric"
               maxLength={NUM_DIGITS}
@@ -106,7 +106,7 @@ function WeightFields({ data, onChange, gajanan }: WeightFieldsProps) {
         ))}
         <div className="space-y-1.5">
           <span className="block text-xs font-bold uppercase tracking-wide text-muted-foreground">Net Weight</span>
-          <output aria-label="Net Weight" className="flex h-[50px] items-center border border-primary/30 bg-primary/5 px-3 font-mono text-xl font-extrabold text-primary" style={gajanan ? { color: G_NAVY, backgroundColor: G_TABLE_HEAD } : undefined}>
+          <output aria-label="Net Weight" className={`flex h-[50px] items-center border border-primary/30 bg-primary/5 px-3 font-mono text-xl font-extrabold text-primary ${gajanan ? "gajanan-net-weight" : ""}`}>
             {getWeightValue(data.netWeight) || "—"}
           </output>
         </div>
@@ -115,7 +115,7 @@ function WeightFields({ data, onChange, gajanan }: WeightFieldsProps) {
   );
 }
 
-function ReceiptFields({ data, onChange }: { data: FormData; onChange: (data: FormData) => void }) {
+function ReceiptFields({ data, onChange, gajanan = false }: { data: FormData; onChange: (data: FormData) => void; gajanan?: boolean }) {
   const fields = [
     { label: "Receipt No.", name: "no" as const, type: "text" },
     { label: "Date", name: "date" as const, type: "date" },
@@ -126,17 +126,17 @@ function ReceiptFields({ data, onChange }: { data: FormData; onChange: (data: Fo
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {fields.map(({ label, name, type }) => (
         <label key={name} className="block space-y-1.5">
-          <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
-          <input aria-label={label} type={type} className={fieldClass} value={data[name]} onChange={(event) => onChange({ ...data, [name]: event.target.value })} />
+          <span className={`text-xs font-bold uppercase tracking-wide ${gajanan ? "gajanan-label" : "text-muted-foreground"}`}>{label}</span>
+          <input aria-label={label} type={type} className={`${fieldClass} ${gajanan ? "gajanan-field" : ""}`} value={data[name]} onChange={(event) => onChange({ ...data, [name]: event.target.value })} />
         </label>
       ))}
       <label className="block space-y-1.5 sm:col-span-2">
-        <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">M/s. / Party Name</span>
-        <input aria-label="M/s. / Party Name" className={fieldClass} value={data.ms} onChange={(event) => onChange({ ...data, ms: event.target.value })} />
+        <span className={`text-xs font-bold uppercase tracking-wide ${gajanan ? "gajanan-label" : "text-muted-foreground"}`}>M/s. / Party Name</span>
+        <input aria-label="M/s. / Party Name" className={`${fieldClass} ${gajanan ? "gajanan-field" : ""}`} value={data.ms} onChange={(event) => onChange({ ...data, ms: event.target.value })} />
       </label>
       <label className="block space-y-1.5 sm:col-span-2">
-        <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Vehicle No.</span>
-        <input aria-label="Vehicle No." className={`${fieldClass} uppercase`} value={data.vehicleNo} onChange={(event) => onChange({ ...data, vehicleNo: event.target.value.toUpperCase() })} />
+        <span className={`text-xs font-bold uppercase tracking-wide ${gajanan ? "gajanan-label" : "text-muted-foreground"}`}>Vehicle No.</span>
+        <input aria-label="Vehicle No." className={`${fieldClass} uppercase ${gajanan ? "gajanan-field" : ""}`} value={data.vehicleNo} onChange={(event) => onChange({ ...data, vehicleNo: event.target.value.toUpperCase() })} />
       </label>
     </div>
   );
@@ -175,41 +175,42 @@ function ReceiptForm({ data, onChange, index, onRemove, canRemove }: ReceiptForm
 
 function GajananReceiptForm({ data, onChange, index, onRemove, canRemove }: ReceiptFormProps) {
   return (
-    <section className="relative overflow-hidden border border-border bg-card shadow-sm">
+    <section className="gajanan-receipt relative overflow-hidden border shadow-sm">
       {canRemove && <Button onClick={onRemove} variant="outline" size="sm" className="absolute right-3 top-3 z-10 no-print">Remove receipt</Button>}
-      <div className="px-5 py-5 sm:px-6">
-        <header className="mb-5 border-b border-border pb-4 pr-32 text-center sm:pr-40">
-          <p className="mb-1 text-xs font-bold uppercase tracking-wide" style={{ color: G_RED }}>|| Shree ||</p>
-          <div className="mx-auto mb-2 max-w-2xl border-y-2 px-3 py-2.5" style={{ borderColor: G_RED, backgroundColor: G_NAVY }}>
-            <h2 className="text-2xl font-extrabold leading-tight text-primary-foreground sm:text-3xl" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>GAJANAN WEIGHBRIDGE</h2>
+      <div className="p-4 sm:p-6">
+        <header className="gajanan-brand-header relative mb-5 overflow-hidden px-5 py-5 pr-32 sm:px-7 sm:py-6 sm:pr-40">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="gajanan-badge px-2 py-1 text-[10px] font-extrabold uppercase tracking-wide">|| Shree ||</span>
+            <span className="text-xs font-bold uppercase tracking-wide text-primary-foreground/80">Weighbridge receipt</span>
           </div>
-          <p className="mt-1 text-sm font-semibold text-foreground">{GAJANAN_ADDRESS} · Mob: {GAJANAN_MOB}</p>
-          <span className="mt-2 inline-block px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-primary-foreground" style={{ backgroundColor: G_RED }}>24/7 Available</span>
+          <h2 className="gajanan-brand-title inline-block px-2 py-1 text-2xl font-extrabold leading-tight sm:text-3xl" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>GAJANAN WEIGHBRIDGE</h2>
+          <p className="mt-2 text-sm font-semibold text-primary-foreground">{GAJANAN_ADDRESS} · Mob: {GAJANAN_MOB}</p>
+          <span className="gajanan-badge mt-2 inline-block px-3 py-1 text-xs font-extrabold uppercase tracking-wide">24/7 Available</span>
         </header>
-        <div className="space-y-5">
-          <ReceiptFields data={data} onChange={onChange} />
+        <div className="space-y-5 px-1 sm:px-2">
+          <ReceiptFields data={data} onChange={onChange} gajanan />
           <WeightFields data={data} onChange={onChange} gajanan />
-          <ReceiptFooter data={data} onChange={onChange} businessName="Gajanan Weighbridge" />
+          <ReceiptFooter data={data} onChange={onChange} businessName="Gajanan Weighbridge" gajanan />
         </div>
       </div>
     </section>
   );
 }
 
-function ReceiptFooter({ data, onChange, businessName }: { data: FormData; onChange: (data: FormData) => void; businessName: string }) {
+function ReceiptFooter({ data, onChange, businessName, gajanan = false }: { data: FormData; onChange: (data: FormData) => void; businessName: string; gajanan?: boolean }) {
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2">
+      <div className={`grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 ${gajanan ? "gajanan-divider" : "border-border"}`}>
         <label className="block space-y-1.5">
-          <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Received Rs.</span>
-          <input aria-label="Received Rs." className={fieldClass} value={data.receivedRs} onChange={(event) => onChange({ ...data, receivedRs: event.target.value })} />
+          <span className={`text-xs font-bold uppercase tracking-wide ${gajanan ? "gajanan-label" : "text-muted-foreground"}`}>Received Rs.</span>
+          <input aria-label="Received Rs." className={`${fieldClass} ${gajanan ? "gajanan-field" : ""}`} value={data.receivedRs} onChange={(event) => onChange({ ...data, receivedRs: event.target.value })} />
         </label>
         <label className="block space-y-1.5">
-          <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Rs.</span>
-          <input aria-label="Rs." className={fieldClass} value={data.rs} onChange={(event) => onChange({ ...data, rs: event.target.value })} />
+          <span className={`text-xs font-bold uppercase tracking-wide ${gajanan ? "gajanan-label" : "text-muted-foreground"}`}>Rs.</span>
+          <input aria-label="Rs." className={`${fieldClass} ${gajanan ? "gajanan-field" : ""}`} value={data.rs} onChange={(event) => onChange({ ...data, rs: event.target.value })} />
         </label>
       </div>
-      <div className="flex flex-wrap items-end justify-between gap-4 border-t border-border pt-4">
+      <div className={`flex flex-wrap items-end justify-between gap-4 border-t pt-4 ${gajanan ? "gajanan-divider" : "border-border"}`}>
         <p className="max-w-md text-xs leading-relaxed text-muted-foreground">Please check weight. No responsibility accepted once carrier leaves the weighbridge.</p>
         <div className="min-w-40 text-center">
           <p className="mb-6 text-sm font-semibold text-foreground">For {businessName}</p>
