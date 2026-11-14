@@ -179,8 +179,10 @@ function GajananReceiptForm({ data, onChange, index, onRemove, canRemove }: Rece
       {canRemove && <Button onClick={onRemove} variant="outline" size="sm" className="absolute right-3 top-3 z-10 no-print">Remove receipt</Button>}
       <div className="px-5 py-5 sm:px-6">
         <header className="mb-5 border-b border-border pb-4 pr-32 text-center sm:pr-40">
-          <p className="text-xs font-bold uppercase tracking-wide" style={{ color: G_RED }}>|| Shree ||</p>
-          <h2 className="mt-1 text-2xl font-extrabold leading-tight sm:text-3xl" style={{ color: G_NAVY, fontFamily: "Georgia, 'Times New Roman', serif" }}>GAJANAN WEIGHBRIDGE</h2>
+          <p className="mb-1 text-xs font-bold uppercase tracking-wide" style={{ color: G_RED }}>|| Shree ||</p>
+          <div className="mx-auto mb-2 max-w-2xl border-y-2 px-3 py-2.5" style={{ borderColor: G_RED, backgroundColor: G_NAVY }}>
+            <h2 className="text-2xl font-extrabold leading-tight text-primary-foreground sm:text-3xl" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>GAJANAN WEIGHBRIDGE</h2>
+          </div>
           <p className="mt-1 text-sm font-semibold text-foreground">{GAJANAN_ADDRESS} · Mob: {GAJANAN_MOB}</p>
           <span className="mt-2 inline-block px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-primary-foreground" style={{ backgroundColor: G_RED }}>24/7 Available</span>
         </header>
@@ -265,8 +267,19 @@ function generateReceiptPDF(forms: FormData[], format: BillFormat) {
     const cx = pageW / 2;
 
     // Header
-    put("|| Shree ||", cx, y + 6, 9, red, true, "center", "times");
-    put(gajanan ? "GAJANAN WEIGHBRIDGE" : "S.S. DHARMKATA", cx, y + 14, 20, brand, true, "center", "helvetica");
+    if (gajanan) {
+      put("|| Shree ||", cx, y + 6, 9, red, true, "center", "times");
+      doc.setFillColor(...brand);
+      doc.roundedRect(L, y + 8, right - L, 11, 1, 1, "F");
+      doc.setDrawColor(...red);
+      doc.setLineWidth(0.8);
+      doc.line(L, y + 8, right, y + 8);
+      doc.line(L, y + 19, right, y + 19);
+      put("GAJANAN WEIGHBRIDGE", cx, y + 16, 16, [255, 255, 255], true, "center", "helvetica");
+    } else {
+      put("|| Shree ||", cx, y + 6, 9, red, true, "center", "times");
+      put("S.S. DHARMKATA", cx, y + 14, 20, brand, true, "center", "helvetica");
+    }
     const address = gajanan ? GAJANAN_ADDRESS : LOCATIONS[form.location || "shegaon"].address;
     put(address, cx, y + 20, 9, dark, true, "center");
     put(`MOB. NO. ${gajanan ? GAJANAN_MOB : "9970041700"}  |  24/7 AVAILABLE`, cx, y + 25, 9, red, true, "center");
